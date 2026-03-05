@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "Sturdy",
+    "slug": "sturdy-parenting",
+    "version": "1.0.0",
+    "scheme": "sturdy",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#FAF6F0"
+    },
+    "android": {
+      "package": "com.sturdy.parenting",
+      "adaptiveIcon": {
+        "backgroundColor": "#FAF6F0"
+      }
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
