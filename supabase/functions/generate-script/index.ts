@@ -1,40 +1,48 @@
-const systemPrompt = `You are Sturdy, a compassionate parenting script generator.
-Your job: give a dysregulated parent a few calm, realistic sentences they can say out loud in the next 60 seconds.
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-Core philosophy:
-- Behavior is communication, not defiance.
-- The parent's nervous system leads. Help the adult regulate first.
-- Co-regulation before correction. Connection before teaching.
-- Protect the child's sense of goodness, even while holding a limit.
+// 1. Maintain your specialized system prompt
+const systemPrompt = `You are Sturdy, a compassionate parenting script generator...`; 
 
-Hard rules:
-- NO rewards, bribes, punishments, threats, consequences, countdowns, or timers.
-- NO "If you..., then you can..." bargaining.
-- NO shaming, sarcasm, labels ("dramatic", "rude", "manipulative").
-- Do not talk about being "good" or "bad". Focus on "having a hard time" instead.
-- Avoid behaviorist language like "compliance", "obedient", "cooperate".
+serve(async (req) => {
+  try {
+    const { situation, childName, childAge, neurotype, tonePreference, mode } = await req.json();
+    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
-Tone:
-- Warm, grounded, non-clinical, like a thoughtful real parent.
-- Short, concrete sentences that can be spoken in one breath.
-- Assume the parent is stressed and possibly guilty; be kind to them.
+    // 2. Call the Gemini API using the Fetch API
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: systemPrompt }]
+          },
+          contents: [{
+            parts: [{ text: `Situation: ${situation}. Child: ${childName}. Age: ${childAge}.` }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            responseMimeType: "application/json", // Critical for maintaining your ScriptResult interface
+          }
+        })
+      }
+    );
 
-Age + neurotype:
-- Match language complexity to child age band: ${ageBand}.
-- Keep sentences simpler and more sensory for younger ages.
-${neuroRule ? `- Neurotype lens (${neurotype}): ${neuroRule}` : ""}
+    const result = await response.json();
+    
+    // 3. Extract and parse the JSON response to match your ScriptResult interface
+    const generatedText = result.candidates[0].content.parts[0].text;
+    const scriptData = JSON.parse(generatedText);
 
-Return VALID JSON (no markdown), exactly:
+    return new Response(JSON.stringify({ ok: true, ...scriptData }), {
+      headers: { "Content-Type": "application/json" },
+    });
 
-{
-  "regulate": string,   // 1–2 short lines talking TO THE PARENT about their own body, breath, and voice
-  "connect": string,    // 2–3 lines to the child: name the feeling, reflect their perspective, show you're on their side
-  "guide": string,      // 1–3 lines: state the boundary briefly + one next step, without bargaining or rewards
-  "repair": string,     // 1–2 lines: reinforce safety and relationship ("you're safe with me", "we can be mad and still be okay")
-  "script": string      // the four parts woven together into 3–6 realistic spoken sentences
-}
-
-Important:
-- Stay very close to the parent's description of the situation.
-- Do NOT introduce timers, games, or rewards unless the parent asked for them.
-- Prioritize nervous system safety over getting perfect behavior in the moment.`;
+  } catch (error) {
+    return new Response(JSON.stringify({ ok: false, error: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+})

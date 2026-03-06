@@ -3,7 +3,8 @@ import {
   View, Text, TextInput, TouchableOpacity,
   ScrollView, ActivityIndicator, StyleSheet, Alert
 } from 'react-native';
-import { generateScript, ScriptResult } from '@/lib/api/generateScript';
+import { generateScript } from '@/lib/api/generateScript';
+import type { ScriptResult } from '@/lib/api/generateScript';
 
 export default function CrisisScreen() {
   const [situation, setSituation] = useState('');

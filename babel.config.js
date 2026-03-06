@@ -7,11 +7,11 @@ module.exports = function (api) {
         'module-resolver',
         {
           root: ['.'],
-          alias: {
-            '@': '.',
-          },
+          alias: { '@': './' },
+          extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
         },
       ],
+      'react-native-reanimated/plugin',
     ],
   };
 };
