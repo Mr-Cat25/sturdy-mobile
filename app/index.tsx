@@ -1,10 +1,12 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useActiveChild } from '@/lib/useActiveChild';
 import FamilyIllustration from '../assets/family.svg';
 
 export default function LandingPage() {
   const router = useRouter();
+  const child = useActiveChild();
 
   const handleGuidancePress = () => {
     // Fallback until /login route is implemented.
@@ -33,6 +35,36 @@ export default function LandingPage() {
           <TouchableOpacity style={styles.ctaBtn} onPress={() => router.push('/onboarding')}>
             <Text style={styles.ctaBtnText}>Start Free - No sign up needed</Text>
           </TouchableOpacity>
+
+          {/* Active child chip */}
+          <View style={{ marginTop: 16, alignItems: 'center' }}>
+            {child ? (
+              <View
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 999,
+                  backgroundColor: '#FFF',
+                  borderWidth: 1,
+                  borderColor: '#E8E0D5',
+                }}
+              >
+                <Text style={{ fontSize: 13, color: '#4A453E' }}>
+                  For {child.name}
+                  {child.age ? ` · ${child.age}` : ''}
+                  {child.neurotype && child.neurotype !== 'None'
+                    ? ` · ${child.neurotype}`
+                    : ''}
+                </Text>
+              </View>
+            ) : (
+              <TouchableOpacity onPress={() => router.push('/onboarding')}>
+                <Text style={{ fontSize: 13, color: '#6B6B6B', textDecorationLine: 'underline' }}>
+                  Add a child profile
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         <View style={styles.featuresCard}>
@@ -69,7 +101,7 @@ export default function LandingPage() {
         </View>
 
         <View style={styles.modesRow}>
-          <TouchableOpacity style={[styles.modeCard, styles.modeRed]} onPress={() => router.push('/onboarding')}>
+          <TouchableOpacity style={[styles.modeCard, styles.modeRed]} onPress={() => router.push('/crisis')}>
             <Text style={styles.modeIcon}>🆘</Text>
             <Text style={styles.modeTitle}>Crisis Mode</Text>
             <Text style={styles.modeSub}>Always Free</Text>
