@@ -52,8 +52,8 @@ export default function LandingPage() {
                 <Text style={{ fontSize: 13, color: '#4A453E' }}>
                   For {child.name}
                   {child.age ? ` · ${child.age}` : ''}
-                  {child.neurotype && child.neurotype !== 'None'
-                    ? ` · ${child.neurotype}`
+                  {child.neurotype && !child.neurotype.includes('None')
+                    ? ` · ${child.neurotype.join(', ')}`
                     : ''}
                 </Text>
               </View>
