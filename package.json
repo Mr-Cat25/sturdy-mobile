@@ -32,6 +32,7 @@
     "@types/react": "~19.1.10",
     "babel-plugin-module-resolver": "^5.0.2",
     "react-native-svg-transformer": "^1.5.3",
+    "supabase": "^2.77.0",
     "typescript": "~5.9.2"
   },
   "engines": {

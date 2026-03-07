@@ -1,21 +1,15 @@
-// src/lib/useActiveChild.ts
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChildProfile } from '@/types/child';
-import { getActiveChild } from '@/lib/childProfile';
+import { getActiveChild } from './childProfile';
 
 export function useActiveChild() {
-  const [child, setChild] = useState<ChildProfile | null>(null);
+  const [activeChild, setActiveChild] = useState<ChildProfile | null>(null);
 
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const c = await getActiveChild();
-      if (mounted) setChild(c);
-    })();
-    return () => {
-      mounted = false;
-    };
+    // Get the initial active child
+    const child = getActiveChild();
+    setActiveChild(child);
   }, []);
 
-  return child;
+  return activeChild;
 }

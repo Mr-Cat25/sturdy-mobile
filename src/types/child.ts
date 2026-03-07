@@ -1,18 +1,10 @@
-// src/types/child.ts
-export type Neurotype =
-  | 'ADHD'
-  | 'Autistic'
-  | 'Highly sensitive'
-  | 'Not sure yet'
-  | 'None';
-
 export interface ChildProfile {
   id: string;
   name: string;
-  nickname?: string;
-  age: number | null;
-  neurotype: Neurotype | null;
-  createdAt: string;
-  updatedAt: string;
+  nickname: string;
+  age: string;         // Guarantees this is a string (like "4-7")
+  neurotype: string[]; // The brackets [] guarantee this is an array!
   isActive: boolean;
+  createdAt?: string;  // The ? makes these optional just in case
+  updatedAt?: string;
 }

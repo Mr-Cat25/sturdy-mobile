@@ -1,190 +1,212 @@
-// app/onboarding/neurotype.tsx
-import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ChildProfile, Neurotype } from '@/types/child';
-import { addChild } from '@/lib/childProfile';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { addChild } from '../../src/lib/childProfile'; 
+import { ChildProfile } from '../../src/types/child';
 
-const NEURO_OPTIONS: Neurotype[] = [
-  'ADHD',
-  'Autistic',
-  'Highly sensitive',
-  'Not sure yet',
-  'None',
-];
-
-export default function OnboardingNeurotype() {
+export default function OnboardingNeurotypeScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ draft?: string }>();
+  // Catch the baton one last time!
+  const { name, nickname, ageGroup } = useLocalSearchParams(); 
 
-  const draft: ChildProfile | null = useMemo(() => {
-    if (!params.draft) return null;
-    try {
-      return JSON.parse(params.draft as string) as ChildProfile;
-    } catch {
-      return null;
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+
+  const neurotypes = ['ADHD', 'Autistic', 'Highly sensitive', 'Not sure yet'];
+
+  const toggleType = (type: string) => {
+    if (type === 'Not sure yet') {
+      setSelectedTypes(['Not sure yet']);
+      return;
     }
-  }, [params.draft]);
+    
+    setSelectedTypes((prev) => {
+      // Remove "Not sure yet" if they select something specific
+      const cleanList = prev.filter((t) => t !== 'Not sure yet');
+      if (cleanList.includes(type)) {
+        return cleanList.filter((t) => t !== type); // Deselect
+      }
+      return [...cleanList, type]; // Select
+    });
+  };
 
-  const [selected, setSelected] = useState<Neurotype | null>(
-    draft?.neurotype ?? null
-  );
-  const [saving, setSaving] = useState(false);
+  const handleFinish = async () => {
+    // 1. Process the neurotype selection cleanly
+    const processedNeurotypes = selectedTypes.length > 0 && !selectedTypes.includes('Not sure yet')
+      ? selectedTypes
+      : ['none'];
 
-  if (!draft) {
-    router.replace('/onboarding');
-    return null;
-  }
-
-  const handleNext = async () => {
-    if (!selected || saving) return;
-    setSaving(true);
-
-    const updated: ChildProfile = {
-      ...draft,
-      neurotype: selected,
+    // 2. Build the final profile object with timestamps
+    const newProfile: ChildProfile = {
+      id: Date.now().toString(), 
+      name: (name as string) || '',
+      nickname: (nickname as string) || '',
+      age: (ageGroup as string) || '',
+      // Using 'any' bypasses the strict string[] vs Neurotype[] mismatch if needed
+      neurotype: processedNeurotypes as any, 
+      isActive: true,
+      createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    await addChild(updated);
-    router.replace('/'); // Done: back to home with active child
-  };
+    try {
+      // 3. Save it to AsyncStorage 
+      await addChild(newProfile);
 
-  const handleBack = () => {
-    router.back();
+      // 4. Send them to the main app! 
+      // We use .replace() instead of .push() so they can't hit the back button to return to onboarding.
+      router.replace('/crisis'); 
+    } catch (error) {
+      console.error("Failed to save child profile:", error);
+    }
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.container}>
-        {/* Top row */}
-        <View className="topRow" style={styles.topRow}>
-          <TouchableOpacity onPress={handleBack} style={styles.backTouch}>
-            <Text style={styles.backText}>←</Text>
-          </TouchableOpacity>
-          <Text style={styles.stepText}>Step 3 of 3</Text>
-        </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Sturdy</Text>
+        <View style={{ width: 24 }} />
+      </View>
 
-        {/* Title */}
-        <View style={styles.header}>
-          <Text style={styles.title}>
-            Anything we should know about their neurotype?
-          </Text>
-          <Text style={styles.subtitle}>
-            This helps scripts be more sensitive to how their brain works.
-          </Text>
-        </View>
+      <View style={styles.content}>
+        <Text style={styles.question}>Anything we should know about their neurotype?</Text>
 
-        {/* Pills */}
-        <View style={styles.pills}>
-          {NEURO_OPTIONS.map((option) => {
-            const active = selected === option;
+        <View style={styles.pillContainer}>
+          {neurotypes.map((type) => {
+            const isSelected = selectedTypes.includes(type);
             return (
               <TouchableOpacity
-                key={option}
-                style={[styles.pill, active && styles.pillActive]}
-                onPress={() => setSelected(option)}
+                key={type}
+                style={[styles.pill, isSelected && styles.pillSelected]}
+                onPress={() => toggleType(type)}
               >
-                <Text
-                  style={[styles.pillLabel, active && styles.pillLabelActive]}
-                >
-                  {option}
+                <Text style={[styles.pillText, isSelected && styles.pillTextSelected]}>
+                  {type}
                 </Text>
               </TouchableOpacity>
             );
           })}
         </View>
 
-        {/* Helper */}
-        <Text style={styles.helper}>
-          Not sure is totally okay. We’ll keep language gentle and flexible.
-        </Text>
-
-        {/* Next */}
-        <View style={styles.bottom}>
-          <TouchableOpacity
-            style={[
-              styles.nextButton,
-              (!selected || saving) && styles.nextDisabled,
-            ]}
-            onPress={handleNext}
-            disabled={!selected || saving}
-          >
-            <Text style={styles.nextText}>
-              {saving ? 'Saving…' : 'Done'}
-            </Text>
-          </TouchableOpacity>
+        {/* Progress dots */}
+        <View style={styles.progressContainer}>
+           <View style={styles.dot} />
+           <View style={[styles.dot, styles.dotActive]} />
+           <View style={styles.dot} />
         </View>
+      </View>
+
+      <View style={styles.footer}>
+        <TouchableOpacity 
+          style={styles.button} 
+          onPress={handleFinish}
+        >
+          {/* Dynamic button text based on selection */}
+          <Text style={styles.buttonText}>
+            {selectedTypes.length > 0 ? 'Next' : 'Skip'}
+          </Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FAF6F0' },
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 24,
+    backgroundColor: '#FAF8F5',
   },
-  topRow: {
+  header: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    paddingHorizontal: 20,
+    paddingTop: 10,
   },
-  backTouch: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  backButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: '#EAEAEA',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 40,
     alignItems: 'center',
+  },
+  question: {
+    fontSize: 28,
+    fontWeight: '500',
+    textAlign: 'center',
+    color: '#1A1A1A',
+    marginBottom: 40,
+  },
+  pillContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'center',
-    marginRight: 8,
-  },
-  backText: { fontSize: 18, color: '#6B6B6B' },
-  stepText: { fontSize: 13, color: '#A0A0A0', fontWeight: '500' },
-  header: { marginTop: 8, marginBottom: 16 },
-  title: { fontSize: 22, fontWeight: '800', color: '#1C1C1E', marginBottom: 6 },
-  subtitle: { fontSize: 14, color: '#6B6B6B', lineHeight: 20 },
-  pills: {
-    marginTop: 8,
-    gap: 10,
+    gap: 12,
+    marginBottom: 40,
   },
   pill: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 999,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E8E0D5',
-    alignItems: 'center',
-  },
-  pillActive: {
-    backgroundColor: '#E8A040',
-    borderColor: '#E8A040',
-  },
-  pillLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#4A453E',
-  },
-  pillLabelActive: {
-    color: '#FFFFFF',
-  },
-  helper: {
-    marginTop: 16,
-    fontSize: 13,
-    color: '#A0A0A0',
-  },
-  bottom: { marginTop: 'auto' },
-  nextButton: {
-    backgroundColor: '#E8A040',
-    borderRadius: 999,
+    backgroundColor: '#FFF',
     paddingVertical: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: 24,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: '#EAEAEA',
   },
-  nextDisabled: { opacity: 0.4 },
-  nextText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
+  pillSelected: {
+    backgroundColor: '#EAA05B',
+    borderColor: '#EAA05B',
+  },
+  pillText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+  },
+  pillTextSelected: {
+    color: '#FFF',
+  },
+  progressContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 'auto', 
+    marginBottom: 30,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#D9D9D9',
+  },
+  dotActive: {
+    backgroundColor: '#EAA05B',
+  },
+  footer: {
+    paddingHorizontal: 24,
+    paddingBottom: 20,
+  },
+  button: {
+    backgroundColor: '#EAA05B',
+    borderRadius: 30,
+    paddingVertical: 18,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: '600',
+  },
 });
