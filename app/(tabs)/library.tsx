@@ -19,7 +19,7 @@ export default function ScriptLibrary() {
     getSavedScripts().then((saved) => setScripts(saved));
   }, []);
 
-  useFocusEffect(loadScripts);
+  useFocusEffect(useCallback(() => { loadScripts(); }, [loadScripts]));
 
   const handleDelete = (id: string) => {
     Alert.alert('Remove script', 'Remove this saved script?', [
