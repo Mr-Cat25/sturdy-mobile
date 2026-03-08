@@ -1,4 +1,162 @@
-// app/(tabs)/index.tsx
-// Re-exports the crisis/support screen to avoid code duplication.
-// The full implementation lives in app/crisis/index.tsx.
-export { default } from '../crisis/index';
+// app/(tabs)/index.tsx  — Dashboard (home tab)
+import React from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ScrollView,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { useRequireAuth } from '@/lib/useRequireAuth';
+import { useActiveChild } from '@/lib/useActiveChild';
+import { colors, spacing, radius, shadow } from '@/lib/theme';
+
+export default function DashboardScreen() {
+  const router = useRouter();
+  const { session, loading } = useRequireAuth();
+  const child = useActiveChild();
+
+  if (loading || !session) return null;
+
+  const showUpgrade = (feature: string) => {
+    Alert.alert(
+      '🔒 Premium Feature',
+      `${feature} is available on the Sturdy Premium plan.\n\nUpgrade to unlock proactive guidance, progress tracking, and multiple child profiles.`,
+      [{ text: 'Not now' }, { text: 'Learn more', onPress: () => {} }],
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        {/* Greeting */}
+        <View style={styles.greeting}>
+          <Text style={styles.greetingTitle}>
+            {child ? `Hi, ${child.name}'s parent 👋` : 'Welcome to Sturdy 👋'}
+          </Text>
+          <Text style={styles.greetingSubtitle}>What do you need right now?</Text>
+        </View>
+
+        {/* Free quick actions */}
+        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <View style={styles.row}>
+          <TouchableOpacity
+            style={[styles.card, styles.cardCrisis]}
+            onPress={() => router.push('/(tabs)/crisis')}
+          >
+            <Text style={styles.cardIcon}>🆘</Text>
+            <Text style={styles.cardTitle}>Crisis Support</Text>
+            <View style={styles.freeBadge}>
+              <Text style={styles.freeBadgeText}>Free</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.card, styles.cardProfile]}
+            onPress={() => router.push('/(tabs)/profile')}
+          >
+            <Text style={styles.cardIcon}>👧</Text>
+            <Text style={styles.cardTitle}>Child Profile</Text>
+            <View style={styles.freeBadge}>
+              <Text style={styles.freeBadgeText}>Free</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* Premium locked features */}
+        <Text style={styles.sectionTitle}>Premium Features</Text>
+
+        <TouchableOpacity
+          style={[styles.premiumCard, shadow.card]}
+          onPress={() => showUpgrade('Guidance Mode')}
+        >
+          <Text style={styles.premiumIcon}>💡</Text>
+          <View style={styles.premiumText}>
+            <Text style={styles.premiumTitle}>Guidance Mode</Text>
+            <Text style={styles.premiumSub}>Proactive strategies for calm moments</Text>
+          </View>
+          <Text style={styles.lockIcon}>🔒</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.premiumCard, shadow.card]}
+          onPress={() => showUpgrade('Progress Tracking')}
+        >
+          <Text style={styles.premiumIcon}>📊</Text>
+          <View style={styles.premiumText}>
+            <Text style={styles.premiumTitle}>Progress Tracking</Text>
+            <Text style={styles.premiumSub}>See patterns and growth over time</Text>
+          </View>
+          <Text style={styles.lockIcon}>🔒</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.premiumCard, shadow.card]}
+          onPress={() => showUpgrade('Multiple Child Profiles')}
+        >
+          <Text style={styles.premiumIcon}>👨‍👩‍👧‍👦</Text>
+          <View style={styles.premiumText}>
+            <Text style={styles.premiumTitle}>Multiple Children</Text>
+            <Text style={styles.premiumSub}>Support all your kids in one plan</Text>
+          </View>
+          <Text style={styles.lockIcon}>🔒</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.cream },
+  scroll: { padding: spacing.md, paddingBottom: spacing.xxl },
+  greeting: { marginBottom: spacing.lg, paddingTop: spacing.sm },
+  greetingTitle: { fontSize: 22, fontWeight: '800', color: colors.black, marginBottom: 4 },
+  greetingSubtitle: { fontSize: 14, color: colors.gray },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.grayLight,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  row: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
+  card: {
+    flex: 1,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    alignItems: 'center',
+    minHeight: 120,
+    justifyContent: 'center',
+    gap: 6,
+  },
+  cardCrisis: { backgroundColor: '#FADADD' },
+  cardProfile: { backgroundColor: '#D4ECF0' },
+  cardIcon: { fontSize: 34 },
+  cardTitle: { fontSize: 14, fontWeight: '700', color: colors.black, textAlign: 'center' },
+  freeBadge: {
+    backgroundColor: '#4CAF50',
+    borderRadius: radius.full,
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+  },
+  freeBadgeText: { color: '#FFF', fontSize: 11, fontWeight: '600' },
+  premiumCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    gap: spacing.sm,
+  },
+  premiumIcon: { fontSize: 28 },
+  premiumText: { flex: 1 },
+  premiumTitle: { fontSize: 15, fontWeight: '700', color: colors.black, marginBottom: 2 },
+  premiumSub: { fontSize: 12, color: colors.gray },
+  lockIcon: { fontSize: 20 },
+});

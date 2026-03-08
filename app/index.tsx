@@ -9,8 +9,7 @@ export default function LandingPage() {
   const child = useActiveChild();
 
   const handleGuidancePress = () => {
-    // Fallback until /login route is implemented.
-    router.push('/onboarding');
+    router.push('/auth');
   };
 
   return (
@@ -18,7 +17,7 @@ export default function LandingPage() {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.nav}>
           <Text style={styles.logo}>Sturdy</Text>
-          <TouchableOpacity style={styles.navPill} onPress={() => router.push('/onboarding')}>
+          <TouchableOpacity style={styles.navPill} onPress={() => router.push('/auth')}>
             <Text style={styles.navPillText}>Get Started</Text>
           </TouchableOpacity>
         </View>
@@ -32,8 +31,8 @@ export default function LandingPage() {
             Instant parenting scripts for real moments. Grounded{"\n"}
             in Conscious Discipline and Attachment Theory.
           </Text>
-          <TouchableOpacity style={styles.ctaBtn} onPress={() => router.push('/onboarding')}>
-            <Text style={styles.ctaBtnText}>Start Free - No sign up needed</Text>
+          <TouchableOpacity style={styles.ctaBtn} onPress={() => router.push('/auth')}>
+            <Text style={styles.ctaBtnText}>Start Free - Create Account</Text>
           </TouchableOpacity>
 
           {/* Active child chip */}
@@ -58,7 +57,7 @@ export default function LandingPage() {
                 </Text>
               </View>
             ) : (
-              <TouchableOpacity onPress={() => router.push('/onboarding')}>
+              <TouchableOpacity onPress={() => router.push('/auth')}>
                 <Text style={{ fontSize: 13, color: '#6B6B6B', textDecorationLine: 'underline' }}>
                   Add a child profile
                 </Text>
@@ -101,7 +100,7 @@ export default function LandingPage() {
         </View>
 
         <View style={styles.modesRow}>
-          <TouchableOpacity style={[styles.modeCard, styles.modeRed]} onPress={() => router.push('/(tabs)')}>
+          <TouchableOpacity style={[styles.modeCard, styles.modeRed]} onPress={() => router.push('/auth')}>
             <Text style={styles.modeIcon}>🆘</Text>
             <Text style={styles.modeTitle}>Crisis Mode</Text>
             <Text style={styles.modeSub}>Always Free</Text>

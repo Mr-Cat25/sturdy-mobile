@@ -1,10 +1,28 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ChildProfile } from '@/types/child';
 
-// Temporary in-memory store just so the UI compiles.
-// Later we will replace this with real Supabase calls.
-let activeChild: ChildProfile | null = null;
+const ACTIVE_CHILD_KEY = 'sturdy:active_child';
+const SAVED_SCRIPTS_KEY = 'sturdy:saved_scripts';
 
-export function addChild(partial: Partial<ChildProfile>): ChildProfile {
+export const MAX_SAVED_SCRIPTS = 5;
+
+export interface SavedScript {
+  id: string;
+  trigger: string;
+  situation: string;
+  regulate: string;
+  connect: string;
+  guide: string;
+  what_if: string;
+  savedAt: string;
+}
+
+export async function addChild(partial: Partial<ChildProfile>): Promise<ChildProfile> {
+  const existing = await getActiveChild();
+  if (existing) {
+    throw new Error('FREE_LIMIT_CHILD');
+  }
+
   const now = new Date().toISOString();
   const child: ChildProfile = {
     id: partial.id ?? 'local-' + Math.random().toString(36).slice(2),
@@ -14,12 +32,43 @@ export function addChild(partial: Partial<ChildProfile>): ChildProfile {
     neurotype: partial.neurotype ?? [],
     createdAt: partial.createdAt ?? now,
     updatedAt: partial.updatedAt ?? now,
-    isActive: partial.isActive ?? true,
+    isActive: true,
   };
-  activeChild = child;
+
+  await AsyncStorage.setItem(ACTIVE_CHILD_KEY, JSON.stringify(child));
   return child;
 }
 
-export function getActiveChild(): ChildProfile | null {
-  return activeChild;
+export async function getActiveChild(): Promise<ChildProfile | null> {
+  const json = await AsyncStorage.getItem(ACTIVE_CHILD_KEY);
+  return json ? (JSON.parse(json) as ChildProfile) : null;
+}
+
+export async function getSavedScripts(): Promise<SavedScript[]> {
+  const json = await AsyncStorage.getItem(SAVED_SCRIPTS_KEY);
+  return json ? (JSON.parse(json) as SavedScript[]) : [];
+}
+
+export async function saveScript(
+  script: Omit<SavedScript, 'id' | 'savedAt'>,
+): Promise<{ ok: boolean; limitReached?: boolean }> {
+  const scripts = await getSavedScripts();
+  if (scripts.length >= MAX_SAVED_SCRIPTS) {
+    return { ok: false, limitReached: true };
+  }
+  const entry: SavedScript = {
+    ...script,
+    id: 'script-' + Math.random().toString(36).slice(2),
+    savedAt: new Date().toISOString(),
+  };
+  await AsyncStorage.setItem(SAVED_SCRIPTS_KEY, JSON.stringify([entry, ...scripts]));
+  return { ok: true };
+}
+
+export async function removeSavedScript(id: string): Promise<void> {
+  const scripts = await getSavedScripts();
+  await AsyncStorage.setItem(
+    SAVED_SCRIPTS_KEY,
+    JSON.stringify(scripts.filter((s) => s.id !== id)),
+  );
 }
