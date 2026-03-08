@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ChildProfile } from '@/types/child';
 
 export default function OnboardingStep1() {
   const router = useRouter();
@@ -20,29 +19,15 @@ export default function OnboardingStep1() {
   const isNextEnabled = name.trim().length >= 2;
 
   const handleSkip = () => {
-    router.replace('/'); // Exit add-child flow, go home
+    router.replace('/(tabs)');
   };
 
   const handleNext = () => {
     if (!isNextEnabled) return;
 
-    const now = new Date().toISOString();
-    const draft: ChildProfile = {
-      id: `child_${Date.now()}_${Math.floor(Math.random() * 100000)}`,
-      name: name.trim(),
-      nickname: nickname.trim() || undefined,
-      ageRange: null,
-      neurotype: null,
-      hardestThing: null,
-      createdAt: now,
-      updatedAt: now,
-      isActive: true,
-    };
-
-    // For now, just pass draft forward; Step 2 will handle updating it
     router.push({
       pathname: '/onboarding/age',
-      params: { draft: JSON.stringify(draft) },
+      params: { name: name.trim(), nickname: nickname.trim() },
     });
   };
 
@@ -55,14 +40,14 @@ export default function OnboardingStep1() {
         <View style={styles.container}>
           {/* Step indicator */}
           <View style={styles.stepRow}>
-            <Text style={styles.stepText}>Step 1 of 4</Text>
+            <Text style={styles.stepText}>Step 1 of 2</Text>
           </View>
 
           {/* Title */}
           <View style={styles.header}>
             <Text style={styles.title}>Who are we supporting?</Text>
             <Text style={styles.subtitle}>
-              We’ll use their name so scripts feel warm and personal.
+              We'll use their name so scripts feel warm and personal.
             </Text>
           </View>
 

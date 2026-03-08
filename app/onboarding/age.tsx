@@ -1,23 +1,47 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { addChild } from '../../src/lib/childProfile';
 
 export default function OnboardingAgeScreen() {
   const router = useRouter();
-  const { name, nickname } = useLocalSearchParams(); 
-  
+  const { name, nickname } = useLocalSearchParams<{ name: string; nickname: string }>();
+
   const [selectedAge, setSelectedAge] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const ageGroups = ['0-3', '4-7', '8-12', '13-17'];
 
-  const handleNext = () => {
-    router.push({
-      pathname: '/onboarding/neurotype',
-      params: { name, nickname, ageGroup: selectedAge }
-    });
+  const saveAndContinue = async (age: string | null) => {
+    if (saving) return;
+    setSaving(true);
+    try {
+      await addChild({
+        name: name ?? '',
+        nickname: nickname ?? '',
+        age: age ?? '',
+        neurotype: [],
+      });
+      router.replace('/(tabs)');
+    } catch (e: any) {
+      if (e.message === 'FREE_LIMIT_CHILD') {
+        Alert.alert(
+          'Child profile already exists',
+          'The free plan supports 1 child profile. Upgrade to add more.',
+          [{ text: 'OK', onPress: () => router.replace('/(tabs)') }],
+        );
+      } else {
+        Alert.alert('Error', 'Could not save profile. Please try again.');
+      }
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const handleNext = () => saveAndContinue(selectedAge);
+  const handleSkip = () => saveAndContinue(null);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -27,6 +51,11 @@ export default function OnboardingAgeScreen() {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Sturdy</Text>
         <View style={{ width: 24 }} />
+      </View>
+
+      {/* Step indicator */}
+      <View style={styles.stepRow}>
+        <Text style={styles.stepText}>Step 2 of 2</Text>
       </View>
 
       <View style={styles.content}>
@@ -50,21 +79,24 @@ export default function OnboardingAgeScreen() {
         </View>
 
         <View style={styles.progressContainer}>
-           <View style={[styles.dot, styles.dotActive]} />
-           <View style={styles.dot} />
-           <View style={styles.dot} />
+          <View style={styles.dot} />
+          <View style={[styles.dot, styles.dotActive]} />
         </View>
 
-        <Text style={styles.footerText}>You can add more details later</Text>
+        <Text style={styles.footerText}>You can add more details later in Profile</Text>
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity 
-          style={[styles.button, !selectedAge && styles.buttonDisabled]} 
+        <TouchableOpacity
+          style={[styles.button, (!selectedAge || saving) && styles.buttonDisabled]}
           onPress={handleNext}
-          disabled={!selectedAge}
+          disabled={!selectedAge || saving}
         >
-          <Text style={styles.buttonText}>Next</Text>
+          <Text style={styles.buttonText}>{saving ? 'Saving…' : 'Finish'}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.skipTouch} onPress={handleSkip} disabled={saving}>
+          <Text style={styles.skipText}>Skip</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -95,10 +127,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
+  stepRow: {
+    alignItems: 'center',
+    paddingTop: 8,
+  },
+  stepText: {
+    fontSize: 13,
+    color: '#A0A0A0',
+    fontWeight: '500',
+  },
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 40,
+    paddingTop: 32,
     alignItems: 'center',
   },
   question: {
@@ -164,6 +205,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     paddingVertical: 18,
     alignItems: 'center',
+    marginBottom: 12,
   },
   buttonDisabled: {
     backgroundColor: '#F0C79B',
@@ -172,5 +214,14 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 18,
     fontWeight: '600',
+  },
+  skipTouch: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  skipText: {
+    fontSize: 15,
+    color: '#6B6B6B',
+    textDecorationLine: 'underline',
   },
 });

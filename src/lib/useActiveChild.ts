@@ -6,9 +6,9 @@ export function useActiveChild() {
   const [activeChild, setActiveChild] = useState<ChildProfile | null>(null);
 
   useEffect(() => {
-    // Get the initial active child
-    const child = getActiveChild();
-    setActiveChild(child);
+    getActiveChild().then((child) => {
+      setActiveChild(child);
+    });
   }, []);
 
   return activeChild;
