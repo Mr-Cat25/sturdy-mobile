@@ -56,7 +56,7 @@ export default function OnboardingNeurotypeScreen() {
 
       // 4. Send them to the main app! 
       // We use .replace() instead of .push() so they can't hit the back button to return to onboarding.
-      router.replace('/crisis'); 
+      router.replace('/(tabs)'); 
     } catch (error) {
       console.error("Failed to save child profile:", error);
     }

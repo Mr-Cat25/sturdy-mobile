@@ -1,11 +1,22 @@
 import React from 'react';
-import { View, Text, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors } from '@/lib/theme';
 
 export default function ScriptLibrary() {
   return (
-    <SafeAreaView className="flex-1 bg-white items-center justify-center">
-      <Text className="text-2xl font-bold text-gray-900">Saved Scripts</Text>
-      <Text className="text-gray-500 mt-2">Past moments of connection live here.</Text>
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.content}>
+        <Text style={styles.title}>Saved Scripts</Text>
+        <Text style={styles.subtitle}>Past moments of connection live here.</Text>
+      </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.cream },
+  content: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: 24, fontWeight: '700', color: colors.black },
+  subtitle: { fontSize: 14, color: colors.gray, marginTop: 8 },
+});

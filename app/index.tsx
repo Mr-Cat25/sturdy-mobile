@@ -101,7 +101,7 @@ export default function LandingPage() {
         </View>
 
         <View style={styles.modesRow}>
-          <TouchableOpacity style={[styles.modeCard, styles.modeRed]} onPress={() => router.push('/crisis')}>
+          <TouchableOpacity style={[styles.modeCard, styles.modeRed]} onPress={() => router.push('/(tabs)')}>
             <Text style={styles.modeIcon}>🆘</Text>
             <Text style={styles.modeTitle}>Crisis Mode</Text>
             <Text style={styles.modeSub}>Always Free</Text>
