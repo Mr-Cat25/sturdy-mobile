@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -18,9 +18,39 @@ import { getActiveChild } from '@/lib/childProfile';
 export default function AuthScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
+  // sentEmail is locked once the OTP is dispatched so it cannot change silently
+  // between the send and verify steps.
+  const [sentEmail, setSentEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Clean up the interval when the component unmounts.
+  useEffect(() => {
+    return () => {
+      if (cooldownRef.current) clearInterval(cooldownRef.current);
+    };
+  }, []);
+
+  const startCooldown = (seconds = 60) => {
+    if (cooldownRef.current) clearInterval(cooldownRef.current);
+    setCooldown(seconds);
+    // Capture the id in the closure so the callback always clears the correct
+    // interval, even if startCooldown is called again before it fires.
+    const id = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(id);
+          cooldownRef.current = null;
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    cooldownRef.current = id;
+  };
 
   const handleSendOTP = async () => {
     const trimmed = email.trim().toLowerCase();
@@ -30,9 +60,13 @@ export default function AuthScreen() {
     }
     setLoading(true);
     try {
+      console.log('[Auth] signInWithOtp → email:', trimmed);
       const { error } = await supabase.auth.signInWithOtp({ email: trimmed });
+      console.log('[Auth] signInWithOtp ← error:', error);
       if (error) throw error;
+      setSentEmail(trimmed);
       setStep('otp');
+      startCooldown();
     } catch (e: any) {
       Alert.alert('Error', e.message ?? 'Something went wrong. Please try again.');
     } finally {
@@ -47,11 +81,13 @@ export default function AuthScreen() {
     }
     setLoading(true);
     try {
+      console.log('[Auth] verifyOtp → email:', sentEmail);
       const { error } = await supabase.auth.verifyOtp({
-        email: email.trim().toLowerCase(),
+        email: sentEmail,
         token: otp.trim(),
         type: 'email',
       });
+      console.log('[Auth] verifyOtp ← error:', error);
       if (error) throw error;
 
       const child = await getActiveChild();
@@ -60,8 +96,25 @@ export default function AuthScreen() {
       } else {
         router.replace('/onboarding');
       }
-    } catch {
-      Alert.alert('Invalid code', 'Please check your email and try again.');
+    } catch (e: any) {
+      Alert.alert('Invalid code', e.message ?? 'Please check your email and try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    if (cooldown > 0 || loading) return;
+    setLoading(true);
+    try {
+      console.log('[Auth] resend signInWithOtp → email:', sentEmail);
+      const { error } = await supabase.auth.signInWithOtp({ email: sentEmail });
+      console.log('[Auth] resend signInWithOtp ← error:', error);
+      if (error) throw error;
+      startCooldown();
+      Alert.alert('Code resent', 'A new 6-digit code has been sent to your email.');
+    } catch (e: any) {
+      Alert.alert('Error', e.message ?? 'Could not resend code. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -79,7 +132,7 @@ export default function AuthScreen() {
             <Text style={styles.subtitle}>
               {step === 'email'
                 ? 'Create your free account or sign in.'
-                : `We sent a 6-digit code to\n${email.trim()}`}
+                : `We sent a 6-digit code to\n${sentEmail}`}
             </Text>
           </View>
 
@@ -131,6 +184,18 @@ export default function AuthScreen() {
                 ) : (
                   <Text style={styles.buttonText}>Sign In</Text>
                 )}
+              </TouchableOpacity>
+              <Text style={styles.hint}>
+                {'Didn\'t get an email? Check your spam or promotions folder.\nNote: a custom SMTP configuration is required for reliable delivery.'}
+              </Text>
+              <TouchableOpacity
+                style={[styles.linkTouch, (cooldown > 0 || loading) && styles.linkDisabled]}
+                onPress={handleResendOTP}
+                disabled={cooldown > 0 || loading}
+              >
+                <Text style={[styles.linkText, cooldown > 0 && styles.linkTextMuted]}>
+                  {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.linkTouch} onPress={() => setStep('email')}>
                 <Text style={styles.linkText}>← Change email</Text>
@@ -203,8 +268,17 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  hint: {
+    fontSize: 12,
+    color: '#8B8580',
+    lineHeight: 18,
+    marginTop: 12,
+    textAlign: 'center',
+  },
   linkTouch: { marginTop: 16, alignItems: 'center' },
   linkText: { fontSize: 14, color: '#6B6B6B' },
+  linkDisabled: { opacity: 0.5 },
+  linkTextMuted: { color: '#B0A9A0' },
   backTouch: { marginTop: 'auto', alignItems: 'center' },
   backText: { fontSize: 14, color: '#A0A0A0' },
 });
