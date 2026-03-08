@@ -1,9 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-sturdy-premium",
   "Access-Control-Allow-Methods": "POST, OPTIONS"
 };
+
+// Free-tier quota constants
+const FREE_MONTHLY_LIMIT = 5;
+const EMERGENCY_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
 const systemPrompt = `
 You are Sturdy, a calm, expert parenting support assistant.
 
@@ -60,7 +66,95 @@ serve(async (req)=>{
     });
   }
   try {
+    // --- Authentication ---
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ ok: false, error: "Authentication required" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+    const token = authHeader.slice("Bearer ".length);
+
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { auth: { persistSession: false } }
+    );
+
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(JSON.stringify({ ok: false, error: "Invalid or expired token" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // --- Parse request body early (body can only be consumed once) ---
     const { situation, childAge, neurotype, mode } = await req.json();
+
+    // --- Premium bypass ---
+    // WARNING: The x-sturdy-premium header is accepted on trust and is NOT
+    // cryptographically verified server-side. Any client can send this header to
+    // skip quota enforcement. Full server-side RevenueCat receipt/entitlement
+    // validation must be added before this is production-safe.
+    const isPremium = req.headers.get("x-sturdy-premium") === "true";
+
+    // --- Quota enforcement (free users only) ---
+    let scriptType: "regular" | "emergency" = "regular";
+    if (!isPremium) {
+      // Start of the current calendar month in UTC
+      const now = new Date();
+      const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+
+      // Count regular scripts used this month
+      const { count: regularCount, error: countError } = await supabaseAdmin
+        .from("script_usage")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("script_type", "regular")
+        .gte("created_at", monthStart.toISOString());
+
+      if (countError) throw new Error(`Failed to check usage quota: ${countError.message}`);
+
+      if ((regularCount ?? 0) >= FREE_MONTHLY_LIMIT) {
+        // Regular quota exhausted — check emergency eligibility
+        const { data: lastEmergency, error: emergencyError } = await supabaseAdmin
+          .from("script_usage")
+          .select("created_at")
+          .eq("user_id", user.id)
+          .eq("script_type", "emergency")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (emergencyError) throw new Error(`Failed to check emergency quota: ${emergencyError.message}`);
+
+        const nowMs = Date.now();
+        const lastEmergencyMs = lastEmergency
+          ? new Date(lastEmergency.created_at).getTime()
+          : 0;
+        const elapsed = nowMs - lastEmergencyMs;
+
+        if (elapsed < EMERGENCY_COOLDOWN_MS) {
+          const nextAvailableMs = lastEmergencyMs + EMERGENCY_COOLDOWN_MS;
+          const hoursRemaining = Math.ceil((nextAvailableMs - nowMs) / (60 * 60 * 1000));
+          return new Response(JSON.stringify({
+            ok: false,
+            error: `Monthly script limit reached. Emergency script available in ${hoursRemaining} hour(s).`,
+            quota_exceeded: true,
+            next_emergency_at: new Date(nextAvailableMs).toISOString()
+          }), {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" }
+          });
+        }
+
+        // Emergency script is allowed
+        scriptType = "emergency";
+      }
+    }
+
     const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
     if (!GEMINI_API_KEY) {
       throw new Error("GEMINI_API_KEY is not configured in Supabase Secrets");
@@ -127,8 +221,18 @@ Requirements:
       regulate: scriptData.regulate || "",
       connect: scriptData.connect || "",
       guide: scriptData.guide || "",
-      what_if: scriptData.what_if || ""
+      what_if: scriptData.what_if || "",
+      script_type: scriptType
     };
+
+    // --- Record usage (best-effort; do not fail the request if this errors) ---
+    const { error: insertError } = await supabaseAdmin
+      .from("script_usage")
+      .insert({ user_id: user.id, script_type: scriptType });
+    if (insertError) {
+      console.error("Failed to record script usage:", insertError.message);
+    }
+
     return new Response(JSON.stringify(clean), {
       headers: {
         ...corsHeaders,
