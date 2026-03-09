@@ -4,14 +4,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useActiveChild } from '@/lib/useActiveChild';
 import FamilyIllustration from '../assets/family.svg';
 import { CrisisDemo } from '@/components/landing/CrisisDemo';
+import { useAuthSession } from '@/lib/useAuthSession';
 
 export default function LandingPage() {
   const router = useRouter();
   const child = useActiveChild();
+  const { session, loading } = useAuthSession();
 
-  const handleGuidancePress = () => {
-    router.push('/auth');
-  };
+const goToAppOrAuth = () => {
+  if (loading) return;
+  router.push(session?.user ? '/(tabs)' : '/auth');
+};
+ const handleGuidancePress = () => {
+  goToAppOrAuth();
+};;
 
   return (
     <SafeAreaView style={styles.safe}>
