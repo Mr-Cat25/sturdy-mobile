@@ -1,5 +1,5 @@
 // app/(tabs)/index.tsx  — Dashboard (home tab)
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { supabase } from '@/lib/supabase';
 import { useRequireAuth } from '@/lib/useRequireAuth';
 import { useActiveChild } from '@/lib/useActiveChild';
 import { colors, spacing, radius, shadow } from '@/lib/theme';
@@ -18,6 +19,21 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { session, loading } = useRequireAuth();
   const child = useActiveChild();
+  const [scriptsRemaining, setScriptsRemaining] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadUsage = async () => {
+      // TODO: implement usage loading logic
+    };
+
+    loadUsage();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   if (loading || !session) return null;
 
@@ -40,6 +56,20 @@ export default function DashboardScreen() {
           <Text style={styles.greetingSubtitle}>What do you need right now?</Text>
         </View>
 
+        {/* Usage banner (Free tier) */}
+        <View style={styles.usageBanner}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.usageTitle}>Free plan</Text>
+            <Text style={styles.usageSub}>
+              {scriptsRemaining === null ? 'Loading usage…' : `${scriptsRemaining} scripts left`}
+            </Text>
+          </View>
+
+          <TouchableOpacity style={styles.usageBtn} onPress={() => showUpgrade('Unlimited scripts')}>
+            <Text style={styles.usageBtnText}>Upgrade</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Free quick actions */}
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.row}>
@@ -56,7 +86,7 @@ export default function DashboardScreen() {
 
           <TouchableOpacity
             style={[styles.card, styles.cardProfile]}
-            onPress={() => router.push('/(tabs)/profile')}
+            onPress={() => router.push(child ? '/(tabs)/profile' : '/onboarding')}
           >
             <Text style={styles.cardIcon}>👧</Text>
             <Text style={styles.cardTitle}>Child Profile</Text>
@@ -115,6 +145,24 @@ const styles = StyleSheet.create({
   greeting: { marginBottom: spacing.lg, paddingTop: spacing.sm },
   greetingTitle: { fontSize: 22, fontWeight: '800', color: colors.black, marginBottom: 4 },
   greetingSubtitle: { fontSize: 14, color: colors.gray },
+  usageBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    ...shadow.card,
+  },
+  usageTitle: { fontSize: 12, fontWeight: '800', color: colors.grayLight, textTransform: 'uppercase' },
+  usageSub: { fontSize: 14, fontWeight: '700', color: colors.black, marginTop: 4 },
+  usageBtn: {
+    backgroundColor: '#E8A040',
+    borderRadius: radius.full,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  usageBtnText: { color: '#FFF', fontSize: 13, fontWeight: '800' },
   sectionTitle: {
     fontSize: 13,
     fontWeight: '700',

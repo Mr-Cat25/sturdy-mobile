@@ -11,20 +11,21 @@ export default function LandingPage() {
   const child = useActiveChild();
   const { session, loading } = useAuthSession();
 
-const goToAppOrAuth = () => {
-  if (loading) return;
-  router.push(session?.user ? '/(tabs)' : '/auth');
-};
- const handleGuidancePress = () => {
-  goToAppOrAuth();
-};;
+  const goToAppOrAuth = () => {
+    if (loading) return;
+    router.push(session?.user ? '/(tabs)' : '/auth');
+  };
+
+  const handleGuidancePress = () => {
+    goToAppOrAuth();
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.nav}>
           <Text style={styles.logo}>Sturdy</Text>
-          <TouchableOpacity style={styles.navPill} onPress={() => router.push('/auth')}>
+          <TouchableOpacity style={styles.navPill} onPress={goToAppOrAuth}>
             <Text style={styles.navPillText}>Get Started</Text>
           </TouchableOpacity>
         </View>
@@ -38,7 +39,7 @@ const goToAppOrAuth = () => {
             Instant parenting scripts for real moments. Grounded{"\n"}
             in Conscious Discipline and Attachment Theory.
           </Text>
-          <TouchableOpacity style={styles.ctaBtn} onPress={() => router.push('/auth')}>
+          <TouchableOpacity style={styles.ctaBtn} onPress={goToAppOrAuth}>
             <Text style={styles.ctaBtnText}>Start Free - Create Account</Text>
           </TouchableOpacity>
 
@@ -64,7 +65,7 @@ const goToAppOrAuth = () => {
                 </Text>
               </View>
             ) : (
-              <TouchableOpacity onPress={() => router.push('/auth')}>
+              <TouchableOpacity onPress={goToAppOrAuth}>
                 <Text style={{ fontSize: 13, color: '#6B6B6B', textDecorationLine: 'underline' }}>
                   Add a child profile
                 </Text>
@@ -107,11 +108,11 @@ const goToAppOrAuth = () => {
 
         <CrisisDemo />
 
-        <TouchableOpacity style={styles.ctaBtn} onPress={() => router.push('/auth')}>
+        <TouchableOpacity style={styles.ctaBtn} onPress={goToAppOrAuth}>
           <Text style={styles.ctaBtnText}>Try Crisis Mode</Text>
         </TouchableOpacity>
         <View style={styles.modesRow}>
-          <TouchableOpacity style={[styles.modeCard, styles.modeRed]} onPress={() => router.push('/auth')}>
+          <TouchableOpacity style={[styles.modeCard, styles.modeRed]} onPress={goToAppOrAuth}>
             <Text style={styles.modeIcon}>🆘</Text>
             <Text style={styles.modeTitle}>Crisis Mode</Text>
             <Text style={styles.modeSub}>Always Free</Text>

@@ -90,12 +90,28 @@ export default function AuthScreen() {
       console.log('[Auth] verifyOtp ← error:', error);
       if (error) throw error;
 
-      const child = await getActiveChild();
-      if (child) {
-        router.replace('/(tabs)');
-      } else {
-        router.replace('/onboarding');
+      // 1) If profile/username missing -> go setup-account
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) throw new Error('Signed in, but user not found.');
+
+      const { data: profile, error: profileErr } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (profileErr) throw profileErr;
+
+      if (!profile?.username) {
+        router.replace('/setup-account' as any);
+        return;
       }
+
+      const child = await getActiveChild();
+      router.replace(child ? '/(tabs)' : '/onboarding');
     } catch (e: any) {
       Alert.alert('Invalid code', e.message ?? 'Please check your email and try again.');
     } finally {
