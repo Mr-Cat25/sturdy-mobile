@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useActiveChild } from '@/lib/useActiveChild';
 import FamilyIllustration from '../assets/family.svg';
+import { CrisisDemo } from '@/components/landing/CrisisDemo';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -65,7 +66,6 @@ export default function LandingPage() {
             )}
           </View>
         </View>
-
         <View style={styles.featuresCard}>
           <Text style={styles.featuresTitle}>What Sturdy gives you</Text>
           <View style={styles.featureRow}>
@@ -99,6 +99,11 @@ export default function LandingPage() {
           </View>
         </View>
 
+        <CrisisDemo />
+
+        <TouchableOpacity style={styles.ctaBtn} onPress={() => router.push('/auth')}>
+          <Text style={styles.ctaBtnText}>Try Crisis Mode</Text>
+        </TouchableOpacity>
         <View style={styles.modesRow}>
           <TouchableOpacity style={[styles.modeCard, styles.modeRed]} onPress={() => router.push('/auth')}>
             <Text style={styles.modeIcon}>🆘</Text>
