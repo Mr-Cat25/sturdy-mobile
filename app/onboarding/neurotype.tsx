@@ -1,136 +1,214 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { addChild } from '../../src/lib/childProfile'; 
-import { ChildProfile } from '../../src/types/child';
+import { addChild } from '@/lib/childProfile';
+import { colors, radius } from '@/lib/theme';
+import { ProgressDots } from '@/components/onboarding/ProgressDots';
+import { MicrocopyBubble } from '@/components/onboarding/MicrocopyBubble';
+import { AccordionCard } from '@/components/onboarding/AccordionCard';
+
+const NEUROTYPES = [
+  'ADHD',
+  'Autistic',
+  'Highly Sensitive',
+  'Sensory Processing',
+  'Not sure yet — that\'s okay',
+];
+
+const NOT_SURE = 'Not sure yet — that\'s okay';
 
 export default function OnboardingNeurotypeScreen() {
   const router = useRouter();
-  // Catch the baton one last time!
-  const { name, nickname, ageGroup } = useLocalSearchParams(); 
+  const { name, nickname, age } = useLocalSearchParams<{
+    name: string;
+    nickname: string;
+    age: string;
+  }>();
 
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [expanded, setExpanded] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const neurotypes = ['ADHD', 'Autistic', 'Highly sensitive', 'Not sure yet'];
+  const displayName = name || 'them';
 
   const toggleType = (type: string) => {
-    if (type === 'Not sure yet') {
-      setSelectedTypes(['Not sure yet']);
+    if (type === NOT_SURE) {
+      setSelectedTypes((prev) =>
+        prev.includes(NOT_SURE) ? [] : [NOT_SURE],
+      );
       return;
     }
-    
     setSelectedTypes((prev) => {
-      // Remove "Not sure yet" if they select something specific
-      const cleanList = prev.filter((t) => t !== 'Not sure yet');
-      if (cleanList.includes(type)) {
-        return cleanList.filter((t) => t !== type); // Deselect
+      const withoutNotSure = prev.filter((t) => t !== NOT_SURE);
+      if (withoutNotSure.includes(type)) {
+        return withoutNotSure.filter((t) => t !== type);
       }
-      return [...cleanList, type]; // Select
+      return [...withoutNotSure, type];
     });
   };
 
-  const handleFinish = async () => {
-    // 1. Process the neurotype selection cleanly
-    const processedNeurotypes = selectedTypes.length > 0 && !selectedTypes.includes('Not sure yet')
-      ? selectedTypes
-      : ['none'];
+  const getSelectedText = () => {
+    if (selectedTypes.length === 0) return '';
+    if (selectedTypes.length === 1) return selectedTypes[0];
+    return `${selectedTypes.length} selected`;
+  };
 
-    // 2. Build the final profile object with timestamps
-    const newProfile: ChildProfile = {
-      id: Date.now().toString(), 
-      name: (name as string) || '',
-      nickname: (nickname as string) || '',
-      age: (ageGroup as string) || '',
-      // Using 'any' bypasses the strict string[] vs Neurotype[] mismatch if needed
-      neurotype: processedNeurotypes as any, 
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
+  const saveAndNavigate = async (neurotypes: string[]) => {
+    if (saving) return;
+    setSaving(true);
     try {
-      // 3. Save it to AsyncStorage 
-      await addChild(newProfile);
-
-      // 4. Send them to the main app! 
-      // We use .replace() instead of .push() so they can't hit the back button to return to onboarding.
-      router.replace('/(tabs)'); 
-    } catch (error) {
-      console.error("Failed to save child profile:", error);
+      await addChild({
+        name: name ?? '',
+        nickname: nickname ?? '',
+        age: age ?? '',
+        neurotype: neurotypes,
+      });
+      router.push({
+        pathname: '/onboarding/summary',
+        params: {
+          name: name ?? '',
+          nickname: nickname ?? '',
+          age: age ?? '',
+          neurotype: neurotypes.join(','),
+        },
+      });
+    } catch (e: any) {
+      if (e.message === 'FREE_LIMIT_CHILD') {
+        Alert.alert(
+          'Child profile already exists',
+          'The free plan supports 1 child profile. Upgrade to add more.',
+          [{ text: 'OK', onPress: () => router.replace('/(tabs)') }],
+        );
+      } else {
+        Alert.alert('Error', 'Could not save profile. Please try again.');
+      }
+    } finally {
+      setSaving(false);
     }
   };
 
+  const handleNext = () => {
+    const neurotypes =
+      selectedTypes.length > 0 && !selectedTypes.includes(NOT_SURE)
+        ? selectedTypes
+        : [];
+    saveAndNavigate(neurotypes);
+  };
+
+  const handleSkip = () => {
+    saveAndNavigate([]);
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Sturdy</Text>
-        <View style={{ width: 24 }} />
-      </View>
-
-      <View style={styles.content}>
-        <Text style={styles.question}>Anything we should know about their neurotype?</Text>
-
-        <View style={styles.pillContainer}>
-          {neurotypes.map((type) => {
-            const isSelected = selectedTypes.includes(type);
-            return (
-              <TouchableOpacity
-                key={type}
-                style={[styles.pill, isSelected && styles.pillSelected]}
-                onPress={() => toggleType(type)}
-              >
-                <Text style={[styles.pillText, isSelected && styles.pillTextSelected]}>
-                  {type}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.container}>
+        {/* Header row */}
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Sturdy</Text>
+          <View style={styles.headerSpacer} />
         </View>
+
+        {/* Title */}
+        <Text style={styles.title}>
+          Anything that makes {displayName}'s brain extra unique?
+        </Text>
+
+        {/* Accordion */}
+        <View style={styles.accordionWrapper}>
+          <AccordionCard
+            label="Select neurotype(s)"
+            selectedText={getSelectedText()}
+            expanded={expanded}
+            onToggle={() => setExpanded((v) => !v)}
+            maxHeight={320}
+          >
+            <View>
+              {NEUROTYPES.map((type) => {
+                const isSelected = selectedTypes.includes(type);
+                return (
+                  <TouchableOpacity
+                    key={type}
+                    style={[styles.typeRow, isSelected && styles.typeRowSelected]}
+                    onPress={() => toggleType(type)}
+                  >
+                    <Text style={[styles.typeRowText, isSelected && styles.typeRowTextSelected]}>
+                      {type}
+                    </Text>
+                    {isSelected && (
+                      <Ionicons name="checkmark" size={18} color={colors.amber} />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+              <TouchableOpacity
+                style={styles.doneButton}
+                onPress={() => setExpanded(false)}
+              >
+                <Text style={styles.doneButtonText}>Done</Text>
+              </TouchableOpacity>
+            </View>
+          </AccordionCard>
+        </View>
+
+        {/* Microcopy */}
+        <MicrocopyBubble text="No diagnosis needed. This just helps us adjust tone and expectations." />
 
         {/* Progress dots */}
-        <View style={styles.progressContainer}>
-           <View style={styles.dot} />
-           <View style={[styles.dot, styles.dotActive]} />
-           <View style={styles.dot} />
+        <View style={styles.dotsRow}>
+          <ProgressDots total={4} active={3} />
         </View>
-      </View>
 
-      <View style={styles.footer}>
-        <TouchableOpacity 
-          style={styles.button} 
-          onPress={handleFinish}
-        >
-          {/* Dynamic button text based on selection */}
-          <Text style={styles.buttonText}>
-            {selectedTypes.length > 0 ? 'Next' : 'Skip'}
-          </Text>
-        </TouchableOpacity>
+        {/* Bottom actions */}
+        <View style={styles.bottom}>
+          <TouchableOpacity
+            style={[styles.nextButton, saving && styles.nextDisabled]}
+            onPress={handleNext}
+            disabled={saving}
+          >
+            <Text style={styles.nextText}>{saving ? 'Saving…' : 'Next →'}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={handleSkip} style={styles.skipTouch} disabled={saving}>
+            <Text style={styles.skipText}>Skip</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: colors.cream,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#FAF8F5',
+    paddingHorizontal: 24,
+    paddingTop: 10,
+    paddingBottom: 24,
   },
-  header: {
+  headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 10,
+    marginBottom: 24,
   },
   backButton: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: '#EAEAEA',
   },
@@ -139,74 +217,80 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 40,
-    alignItems: 'center',
+  headerSpacer: {
+    width: 40,
   },
-  question: {
-    fontSize: 28,
-    fontWeight: '500',
-    textAlign: 'center',
-    color: '#1A1A1A',
-    marginBottom: 40,
+  title: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: colors.black,
+    marginBottom: 20,
+    lineHeight: 34,
   },
-  pillContainer: {
+  accordionWrapper: {
+    zIndex: 10,
+  },
+  typeRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 12,
-    marginBottom: 40,
-  },
-  pill: {
-    backgroundColor: '#FFF',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
     paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: '#EAEAEA',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  pillSelected: {
-    backgroundColor: '#EAA05B',
-    borderColor: '#EAA05B',
+  typeRowSelected: {
+    backgroundColor: '#FFF8EE',
   },
-  pillText: {
+  typeRowText: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
+    color: colors.black,
+    flex: 1,
+    marginRight: 8,
   },
-  pillTextSelected: {
-    color: '#FFF',
+  typeRowTextSelected: {
+    color: colors.amber,
+    fontWeight: '600',
   },
-  progressContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 'auto', 
-    marginBottom: 30,
+  doneButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    backgroundColor: colors.amberLight,
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#D9D9D9',
+  doneButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.amber,
   },
-  dotActive: {
-    backgroundColor: '#EAA05B',
+  dotsRow: {
+    marginTop: 24,
   },
-  footer: {
-    paddingHorizontal: 24,
-    paddingBottom: 20,
+  bottom: {
+    marginTop: 'auto',
+    paddingTop: 16,
   },
-  button: {
-    backgroundColor: '#EAA05B',
-    borderRadius: 30,
-    paddingVertical: 18,
+  nextButton: {
+    backgroundColor: colors.amber,
+    borderRadius: radius.full,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  nextDisabled: {
+    opacity: 0.4,
+  },
+  nextText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  skipTouch: {
     alignItems: 'center',
   },
-  buttonText: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: '600',
+  skipText: {
+    fontSize: 14,
+    color: colors.gray,
+    textDecorationLine: 'underline',
   },
 });
