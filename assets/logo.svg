@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 130">
+  <defs>
+    <linearGradient id="leftGrad" x1="90" y1="12" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F4A683"/>
+      <stop offset="100%" stop-color="#E88BA2"/>
+    </linearGradient>
+    <linearGradient id="rightGrad" x1="90" y1="12" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#8BB8E8"/>
+      <stop offset="100%" stop-color="#6FA0D6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Left half of heart (peach/coral gradient) -->
+  <path d="M 90 36 C 82 24 70 12 55 12 C 38 12 22 24 22 40 C 22 62 55 75 90 90 L 90 36 Z"
+        fill="url(#leftGrad)"/>
+
+  <!-- Right half of heart (blue gradient) -->
+  <path d="M 90 36 C 98 24 110 12 125 12 C 142 12 158 24 158 40 C 158 62 125 75 90 90 L 90 36 Z"
+        fill="url(#rightGrad)"/>
+
+  <!-- White center divider line suggesting two figures -->
+  <line x1="90" y1="36" x2="90" y2="86" stroke="white" stroke-width="2.5"/>
+
+  <!-- Left parent head (white oval suggesting face/head shape) -->
+  <ellipse cx="56" cy="22" rx="11" ry="9" fill="white" opacity="0.65"/>
+
+  <!-- Right parent head (white oval) -->
+  <ellipse cx="124" cy="22" rx="11" ry="9" fill="white" opacity="0.65"/>
+
+  <!-- Child circle (golden yellow) centered in lower heart -->
+  <circle cx="90" cy="71" r="13" fill="#F5C542"/>
+
+  <!-- STURDY text -->
+  <text x="90" y="116" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif"
+        font-weight="700" font-size="15" fill="#1E2A4A" letter-spacing="5">STURDY</text>
+</svg>
