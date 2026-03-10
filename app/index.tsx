@@ -35,7 +35,6 @@ export default function LandingPage() {
     router.push(session?.user ? '/(tabs)' : '/auth');
   };
 
-  // Floating + breathing animation for family illustration
   const floatY = useSharedValue(0);
   const breathScale = useSharedValue(1);
 
@@ -63,57 +62,45 @@ export default function LandingPage() {
   }));
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={s.safe}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        onScroll={(e) => {
-          const offsetY = e.nativeEvent.contentOffset.y;
-          setShowStickyBar(offsetY > 300);
-        }}
+        contentContainerStyle={s.scrollContent}
+        onScroll={(e) => setShowStickyBar(e.nativeEvent.contentOffset.y > 300)}
         scrollEventThrottle={16}
       >
-        {/* 1. Nav */}
-        <View style={styles.nav}>
-          <SturdyLogo width={120} height={50} />
-          <TouchableOpacity style={styles.navPill} onPress={goToAppOrAuth}>
-            <Text style={styles.navPillText}>Get Started</Text>
+        {/* ── Nav ── */}
+        <View style={s.nav}>
+          <SturdyLogo width={110} height={44} />
+          <TouchableOpacity style={s.navPill} onPress={goToAppOrAuth} activeOpacity={0.85}>
+            <Text style={s.navPillText}>Get Started</Text>
           </TouchableOpacity>
         </View>
 
-        {/* 2. Hero */}
-        <View style={styles.hero}>
-          <View style={styles.illustration}>
+        {/* ── Hero ── */}
+        <View style={s.heroCard}>
+          <View style={s.illustrationShell}>
             <Animated.View style={animatedIllustrationStyle}>
-              <FamilyIllustration width={280} height={200} />
+              <FamilyIllustration width={260} height={190} />
             </Animated.View>
           </View>
-          <Text style={styles.heroTitle}>The words you need,{'\n'}when you need them.</Text>
-          <Text style={styles.heroSub}>
-            Instant parenting scripts for real moments. Grounded{'\n'}
-            in Conscious Discipline and Attachment Theory.
+
+          <Text style={s.heroTitle}>
+            The words you need,{'\n'}when you need them.
           </Text>
-          <TouchableOpacity style={styles.ctaBtn} onPress={goToAppOrAuth}>
-            <Text style={styles.ctaBtnText}>Start Free — Create Account</Text>
+          <Text style={s.heroSub}>
+            Instant parenting scripts for real moments.{'\n'}
+            Grounded in Conscious Discipline & Attachment Theory.
+          </Text>
+
+          <TouchableOpacity style={s.ctaBtn} onPress={goToAppOrAuth} activeOpacity={0.88}>
+            <Text style={s.ctaBtnText}>Start Free — Create Account</Text>
           </TouchableOpacity>
-        </View>
 
-        {/* 3. Social Proof Bar */}
-        <View style={styles.socialProofBar}>
-          <Text style={styles.socialProofText}>
-            {'👨‍👩‍👧  Trusted by parents everywhere  ·  ⭐ 4.9 average rating'}
-          </Text>
-          <Text style={styles.socialProofText}>
-            {'🧠  Built on real developmental science'}
-          </Text>
-        </View>
-
-        {/* 4. Active Child Chip */}
-        <View style={{ marginTop: 8, marginBottom: 16, alignItems: 'center' }}>
           {child ? (
-            <View style={styles.childChip}>
-              <Text style={styles.childChipText}>
-                {'For '}
-                {child.name}
+            <View style={s.childChip}>
+              <Text style={s.childChipText}>
+                For {child.name}
                 {child.age ? ` · ${child.age}` : ''}
                 {child.neurotype && !child.neurotype.includes('None')
                   ? ` · ${child.neurotype.join(', ')}`
@@ -122,88 +109,137 @@ export default function LandingPage() {
             </View>
           ) : (
             <TouchableOpacity onPress={goToAppOrAuth}>
-              <Text style={styles.addChildText}>Add a child profile</Text>
+              <Text style={s.addChildText}>+ Add a child profile</Text>
             </TouchableOpacity>
           )}
         </View>
 
-        {/* 5. Features Card */}
-        <View style={styles.featuresCard}>
-          <Text style={styles.featuresTitle}>What Sturdy gives you</Text>
-          <View style={styles.featureRow}>
-            <View style={styles.featureIconBox}>
-              <Text style={styles.featureIconText}>⚡</Text>
-            </View>
-            <View>
-              <Text style={styles.featureLabel}>Crisis scripts in 3 taps</Text>
-              <Text style={styles.featureSub}>When it's already escalated</Text>
-            </View>
+        {/* ── Social Proof ── */}
+        <View style={s.proofBar}>
+          <View style={s.proofItem}>
+            <Text style={s.proofEmoji}>👨‍👩‍👧</Text>
+            <Text style={s.proofText}>Trusted by parents everywhere</Text>
           </View>
-          <View style={styles.divider} />
-          <View style={styles.featureRow}>
-            <View style={styles.featureIconBox}>
-              <Text style={styles.featureIconText}>🤍</Text>
-            </View>
-            <View>
-              <Text style={styles.featureLabel}>Tailored to your child</Text>
-              <Text style={styles.featureSub}>Age, name, and neurotype aware</Text>
-            </View>
+          <View style={s.proofDot} />
+          <View style={s.proofItem}>
+            <Text style={s.proofEmoji}>⭐</Text>
+            <Text style={s.proofText}>4.9 average rating</Text>
           </View>
-          <View style={styles.divider} />
-          <View style={styles.featureRow}>
-            <View style={styles.featureIconBox}>
-              <Text style={styles.featureIconText}>📖</Text>
+          <View style={s.proofDot} />
+          <View style={s.proofItem}>
+            <Text style={s.proofEmoji}>🧠</Text>
+            <Text style={s.proofText}>Real developmental science</Text>
+          </View>
+        </View>
+
+        <View style={s.divider} />
+
+        {/* ── Section: Features ── */}
+        <View style={s.section}>
+          <Text style={s.sectionEyebrow}>WHAT YOU GET</Text>
+          <Text style={s.sectionTitle}>What Sturdy gives you</Text>
+
+          <View style={s.featuresGrid}>
+            <View style={[s.featureCard, s.featureWarm]}>
+              <View style={s.featureIconBox}>
+                <Text style={s.featureIcon}>⚡</Text>
+              </View>
+              <Text style={s.featureLabel}>Crisis scripts in 3 taps</Text>
+              <Text style={s.featureSub}>When it&apos;s already escalated</Text>
             </View>
-            <View>
-              <Text style={styles.featureLabel}>Guidance for the calm moments</Text>
-              <Text style={styles.featureSub}>Build long-term strategies</Text>
+            <View style={[s.featureCard, s.featureCool]}>
+              <View style={s.featureIconBox}>
+                <Text style={s.featureIcon}>🤍</Text>
+              </View>
+              <Text style={s.featureLabel}>Tailored to your child</Text>
+              <Text style={s.featureSub}>Age, name & neurotype aware</Text>
+            </View>
+            <View style={[s.featureCard, s.featureNeutral]}>
+              <View style={s.featureRowInline}>
+                <View style={s.featureIconBox}>
+                  <Text style={s.featureIcon}>📖</Text>
+                </View>
+                <View style={s.featureTextWrap}>
+                  <Text style={s.featureLabel}>Guidance for the calm moments</Text>
+                  <Text style={s.featureSub}>Build long-term strategies with steady support</Text>
+                </View>
+              </View>
             </View>
           </View>
         </View>
 
-        {/* 6. CrisisDemo */}
-        <View style={styles.section}>
+        <View style={s.divider} />
+
+        {/* ── Section: Crisis Demo ── */}
+        <View style={s.section}>
           <CrisisDemo />
         </View>
 
-        {/* 7. Plan Comparison */}
-        <View style={styles.section}>
+        <View style={s.divider} />
+
+        {/* ── Section: Plans ── */}
+        <View style={s.section}>
           <PlanComparison onStartFree={goToAppOrAuth} onTryPremium={goToAppOrAuth} />
         </View>
 
-        {/* 8. Testimonial Slider */}
-        <View style={styles.section}>
+        <View style={s.divider} />
+
+        {/* ── Section: Testimonials ── */}
+        <View style={s.section}>
           <TestimonialSlider />
         </View>
 
-        {/* 9. Mode Cards */}
-        <View style={styles.modesRow}>
-          <TouchableOpacity style={[styles.modeCard, styles.modeRed]} onPress={goToAppOrAuth}>
-            <Text style={styles.modeIcon}>🆘</Text>
-            <Text style={styles.modeTitle}>Crisis Mode</Text>
-            <Text style={styles.modeSub}>Always Free</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.modeCard, styles.modeTeal]} onPress={goToAppOrAuth}>
-            <Text style={styles.modeIcon}>💡</Text>
-            <Text style={styles.modeTitle}>Guidance Mode</Text>
-            <Text style={styles.modeSub}>Premium</Text>
+        <View style={s.divider} />
+
+        {/* ── Section: Mode Cards ── */}
+        <View style={s.section}>
+          <Text style={s.sectionEyebrow}>TWO MODES</Text>
+          <Text style={s.sectionTitle}>Choose how Sturdy helps</Text>
+
+          <View style={s.modesRow}>
+            <TouchableOpacity
+              style={[s.modeCard, s.modeRed]}
+              onPress={goToAppOrAuth}
+              activeOpacity={0.85}
+            >
+              <Text style={s.modeIcon}>🆘</Text>
+              <Text style={s.modeTitle}>Crisis Mode</Text>
+              <Text style={s.modeBadge}>Always Free</Text>
+              <Text style={s.modeSub}>Fast help when it&apos;s already escalated</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[s.modeCard, s.modeTeal]}
+              onPress={goToAppOrAuth}
+              activeOpacity={0.85}
+            >
+              <Text style={s.modeIcon}>💡</Text>
+              <Text style={s.modeTitle}>Guidance Mode</Text>
+              <Text style={s.modeBadge}>Premium</Text>
+              <Text style={s.modeSub}>Long-term coaching for calmer homes</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* ── Footer ── */}
+        <View style={s.footerBlock}>
+          <Text style={s.footerTitle}>
+            Parenting is hard.{'\n'}The words shouldn&apos;t be.
+          </Text>
+          <Text style={s.footerSub}>
+            Crisis Mode is always free. Premium unlocks deeper guidance.
+          </Text>
+          <TouchableOpacity style={s.footerCta} onPress={goToAppOrAuth} activeOpacity={0.88}>
+            <Text style={s.footerCtaText}>Get Started Free</Text>
           </TouchableOpacity>
         </View>
 
-        {/* 10. Footer */}
-        <Text style={styles.footer}>
-          Crisis Mode is always free. Premium unlocks deep learning.
-        </Text>
-
-        {/* Bottom padding so sticky bar doesn't overlap last content */}
-        <View style={styles.stickyBarSpacer} />
+        <View style={s.stickyBarSpacer} />
       </ScrollView>
 
-      {/* 11. Sticky Bottom CTA */}
       {showStickyBar && (
-        <View style={styles.stickyBar}>
-          <TouchableOpacity style={styles.stickyBtn} onPress={goToAppOrAuth}>
-            <Text style={styles.stickyBtnText}>Get Started Free</Text>
+        <View style={s.stickyBar}>
+          <TouchableOpacity style={s.stickyBtn} onPress={goToAppOrAuth} activeOpacity={0.88}>
+            <Text style={s.stickyBtnText}>Get Started Free</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -211,207 +247,270 @@ export default function LandingPage() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FAF6F0' },
+/* ═══════════════════════════  STYLES  ═══════════════════════════ */
 
-  // Nav
+const CREAM = '#FAF6F0';
+const AMBER = '#E8A040';
+const BLACK = '#1C1C1E';
+const GRAY = '#6B6B6B';
+const GRAY_LIGHT = '#8B8580';
+const BORDER = '#E8E0D5';
+
+const s = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: CREAM },
+  scrollContent: { paddingBottom: 32 },
+
+  /* ── Nav ── */
   nav: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 8,
+    paddingTop: 8,
+    paddingBottom: 6,
   },
   navPill: {
-    backgroundColor: '#E8A040',
+    backgroundColor: AMBER,
     borderRadius: 999,
     paddingHorizontal: 18,
-    paddingVertical: 8,
+    paddingVertical: 9,
   },
-  navPillText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  navPillText: { color: '#fff', fontSize: 14, fontWeight: '700' },
 
-  // Hero
-  hero: { alignItems: 'center', paddingHorizontal: 24, paddingTop: 8 },
-  illustration: {
+  /* ── Hero Card ── */
+  heroCard: {
+    marginHorizontal: 16,
+    marginTop: 4,
+    backgroundColor: 'rgba(255,255,255,0.55)',
+    borderRadius: 28,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 20,
+    borderWidth: 1,
+    borderColor: '#F0E6D9',
+    alignItems: 'center',
+  },
+  illustrationShell: {
     width: '100%',
-    height: 220,
-    backgroundColor: '#F0E6D6',
-    borderRadius: 20,
+    height: 210,
+    borderRadius: 22,
+    backgroundColor: '#F3E8D8',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
     overflow: 'hidden',
   },
   heroTitle: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: '800',
-    color: '#1C1C1E',
+    color: BLACK,
     textAlign: 'center',
-    lineHeight: 38,
-    marginBottom: 12,
+    lineHeight: 36,
+    letterSpacing: -0.6,
+    marginBottom: 10,
   },
   heroSub: {
     fontSize: 14,
-    color: '#6B6B6B',
+    color: GRAY,
     textAlign: 'center',
-    lineHeight: 21,
-    marginBottom: 24,
+    lineHeight: 22,
+    marginBottom: 20,
   },
   ctaBtn: {
-    backgroundColor: '#E8A040',
+    backgroundColor: AMBER,
     borderRadius: 999,
     paddingVertical: 16,
     width: '100%',
     alignItems: 'center',
-    marginBottom: 28,
-    shadowColor: '#E8A040',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    marginBottom: 14,
+    shadowColor: AMBER,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
     elevation: 4,
   },
   ctaBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-
-  // Social Proof Bar
-  socialProofBar: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 4,
-  },
-  socialProofText: {
-    fontSize: 13,
-    color: '#8B8580',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-
-  // Child chip
   childChip: {
-    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 999,
-    backgroundColor: '#FFF',
+    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#E8E0D5',
+    borderColor: BORDER,
   },
-  childChipText: { fontSize: 13, color: '#4A453E' },
-  addChildText: {
-    fontSize: 13,
-    color: '#6B6B6B',
-    textDecorationLine: 'underline',
+  childChipText: { fontSize: 13, color: '#4A453E', fontWeight: '500' },
+  addChildText: { fontSize: 13, color: GRAY, textDecorationLine: 'underline' },
+
+  /* ── Social Proof ── */
+  proofBar: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    gap: 6,
+  },
+  proofItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  proofEmoji: { fontSize: 14 },
+  proofText: { fontSize: 12, color: GRAY_LIGHT },
+  proofDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: BORDER,
   },
 
-  // Features Card
-  featuresCard: {
-    marginHorizontal: 16,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 20,
+  /* ── Divider ── */
+  divider: {
+    height: 1,
+    backgroundColor: '#EDE5DA',
+    marginHorizontal: 32,
+    marginVertical: 8,
+  },
+
+  /* ── Section ── */
+  section: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  sectionEyebrow: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.6,
+    color: GRAY_LIGHT,
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: BLACK,
+    textAlign: 'center',
     marginBottom: 16,
+    letterSpacing: -0.3,
+  },
+
+  /* ── Features Grid ── */
+  featuresGrid: { gap: 12 },
+  featureCard: {
+    borderRadius: 20,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: '#F0E8DE',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
     shadowRadius: 10,
     elevation: 2,
   },
-  featuresTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1C1C1E',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  featureRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    paddingVertical: 4,
-  },
+  featureWarm: { backgroundColor: '#FFF9F2' },
+  featureCool: { backgroundColor: '#F7FBF8' },
+  featureNeutral: { backgroundColor: '#FFFFFF' },
   featureIconBox: {
     width: 44,
     height: 44,
     backgroundColor: '#FFF0D9',
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 10,
   },
-  featureIconText: { fontSize: 20 },
-  featureLabel: { fontSize: 15, fontWeight: '600', color: '#1C1C1E' },
-  featureSub: { fontSize: 12, color: '#6B6B6B', marginTop: 2 },
-  divider: { height: 1, backgroundColor: '#F0EAE0', marginVertical: 14 },
+  featureIcon: { fontSize: 20 },
+  featureLabel: { fontSize: 16, fontWeight: '700', color: BLACK, marginBottom: 4 },
+  featureSub: { fontSize: 13, color: GRAY, lineHeight: 19 },
+  featureRowInline: { flexDirection: 'row', alignItems: 'center' },
+  featureTextWrap: { flex: 1, marginLeft: 14 },
 
-  // Shared section spacing
-  section: {
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
-
-  // Mode Cards
-  modesRow: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
+  /* ── Mode Cards ── */
+  modesRow: { flexDirection: 'row', gap: 12 },
   modeCard: {
     flex: 1,
-    borderRadius: 20,
-    padding: 20,
+    borderRadius: 22,
+    padding: 18,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.06,
     shadowRadius: 10,
     elevation: 2,
   },
-  modeRed: { backgroundColor: '#FADADD' },
-  modeTeal: { backgroundColor: '#D4ECF0' },
-  modeIcon: { fontSize: 32, marginBottom: 8 },
-  modeTitle: { fontSize: 15, fontWeight: '700', color: '#1C1C1E', marginBottom: 4 },
-  modeSub: { fontSize: 12, color: '#6B6B6B', fontWeight: '500' },
+  modeRed: { backgroundColor: '#FBE6E8' },
+  modeTeal: { backgroundColor: '#DFF1F4' },
+  modeIcon: { fontSize: 30, marginBottom: 8 },
+  modeTitle: { fontSize: 16, fontWeight: '800', color: BLACK, marginBottom: 4 },
+  modeBadge: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: AMBER,
+    letterSpacing: 0.4,
+    marginBottom: 8,
+  },
+  modeSub: { fontSize: 12, color: GRAY, textAlign: 'center', lineHeight: 17 },
 
-  // Footer
-  footer: {
-    textAlign: 'center',
-    color: '#A0A0A0',
-    fontSize: 12,
-    paddingBottom: 8,
+  /* ── Footer ── */
+  footerBlock: {
+    alignItems: 'center',
     paddingHorizontal: 24,
-    lineHeight: 18,
+    paddingTop: 24,
+    paddingBottom: 8,
   },
-
-  // Spacer to ensure content isn't hidden behind sticky bar
-  stickyBarSpacer: {
-    height: 80,
+  footerTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: BLACK,
+    textAlign: 'center',
+    lineHeight: 28,
+    marginBottom: 8,
   },
+  footerSub: {
+    fontSize: 13,
+    color: GRAY_LIGHT,
+    textAlign: 'center',
+    lineHeight: 19,
+    marginBottom: 20,
+  },
+  footerCta: {
+    backgroundColor: AMBER,
+    borderRadius: 999,
+    paddingVertical: 16,
+    paddingHorizontal: 48,
+    alignItems: 'center',
+    shadowColor: AMBER,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  footerCtaText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 
-  // Sticky Bottom CTA
+  /* ── Sticky CTA ── */
+  stickyBarSpacer: { height: 80 },
   stickyBar: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(250, 246, 240, 0.95)',
+    backgroundColor: 'rgba(250, 246, 240, 0.96)',
     paddingHorizontal: 20,
     paddingVertical: 12,
     paddingBottom: 20,
     borderTopWidth: 1,
-    borderTopColor: '#E8E0D5',
-    shadowColor: '#1C1C1E',
+    borderTopColor: BORDER,
+    shadowColor: BLACK,
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 8,
   },
   stickyBtn: {
-    backgroundColor: '#E8A040',
+    backgroundColor: AMBER,
     borderRadius: 999,
     paddingVertical: 16,
     alignItems: 'center',
-    shadowColor: '#E8A040',
+    shadowColor: AMBER,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
