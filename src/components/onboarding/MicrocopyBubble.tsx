@@ -16,7 +16,7 @@ export function MicrocopyBubble({ text, emoji = '💬' }: MicrocopyBubbleProps) 
 
   useEffect(() => {
     opacity.value = withTiming(1, { duration: 300 });
-  }, []);
+  }, [opacity]);
 
   const animStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,

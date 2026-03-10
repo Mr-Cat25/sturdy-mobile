@@ -15,12 +15,14 @@ import { colors, radius } from '@/lib/theme';
 import { ProgressDots } from '@/components/onboarding/ProgressDots';
 import { MicrocopyBubble } from '@/components/onboarding/MicrocopyBubble';
 
+const MIN_NAME_LENGTH = 2;
+
 export default function OnboardingNameScreen() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [nickname, setNickname] = useState('');
 
-  const isNextEnabled = name.trim().length >= 2;
+  const isNextEnabled = name.trim().length >= MIN_NAME_LENGTH;
 
   const handleNext = () => {
     if (!isNextEnabled) return;

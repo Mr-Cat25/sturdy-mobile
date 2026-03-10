@@ -14,7 +14,7 @@ import { ProgressDots } from '@/components/onboarding/ProgressDots';
 import { MicrocopyBubble } from '@/components/onboarding/MicrocopyBubble';
 import { AccordionCard } from '@/components/onboarding/AccordionCard';
 
-const AGES = ['2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17'];
+const AGES = Array.from({ length: 16 }, (_, i) => String(i + 2));
 
 export default function OnboardingAgeScreen() {
   const router = useRouter();

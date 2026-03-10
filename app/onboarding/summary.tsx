@@ -66,7 +66,7 @@ export default function OnboardingSummaryScreen() {
               </View>
 
               <View style={styles.cardRow}>
-                <Text style={styles.cardLabel}>Brain type</Text>
+                <Text style={styles.cardLabel}>Neurotype</Text>
                 <Text style={styles.cardValue}>{displayNeurotype}</Text>
               </View>
             </View>

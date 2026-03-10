@@ -27,7 +27,7 @@ function Dot({ isActive }: { isActive: boolean }) {
 
   useEffect(() => {
     scale.value = withSpring(isActive ? 1.3 : 1, { damping: 15 });
-  }, [isActive]);
+  }, [isActive, scale]);
 
   const animStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
