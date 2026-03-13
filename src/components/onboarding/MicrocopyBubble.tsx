@@ -5,6 +5,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
+import { colors, spacing } from '@/lib/theme';
 
 interface MicrocopyBubbleProps {
   text: string;
@@ -33,13 +34,13 @@ export function MicrocopyBubble({ text, emoji = '💬' }: MicrocopyBubbleProps) 
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 16,
+    marginTop: spacing.md,
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.xl,
   },
   text: {
     fontSize: 13,
-    color: '#8B8580',
+    color: colors.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
     lineHeight: 18,

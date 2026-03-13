@@ -12,7 +12,7 @@ import Animated, {
   withDelay,
 } from 'react-native-reanimated';
 import { useAuthSession } from '@/lib/useAuthSession';
-import { colors } from '@/lib/theme';
+import { colors, spacing, radius, shadow } from '@/lib/theme';
 import { ProgressDots } from '@/components/onboarding/ProgressDots';
 import FamilyIllustration from '../../assets/family.svg';
 
@@ -25,7 +25,7 @@ export default function OnboardingWelcome() {
     router.push(session?.user ? '/(tabs)/crisis' : '/auth');
   };
 
-  // Floating + breathing animation (same as landing page)
+  // Floating + breathing animation
   const floatY = useSharedValue(0);
   const breathScale = useSharedValue(1);
 
@@ -38,7 +38,6 @@ export default function OnboardingWelcome() {
   const line3TranslateY = useSharedValue(12);
 
   useEffect(() => {
-    // Float animation
     floatY.value = withRepeat(
       withSequence(
         withTiming(-8, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
@@ -56,7 +55,6 @@ export default function OnboardingWelcome() {
       true,
     );
 
-    // Staggered text
     const ease = { duration: 400, easing: Easing.out(Easing.ease) };
     line1Opacity.value = withDelay(500, withTiming(1, ease));
     line1TranslateY.value = withDelay(500, withTiming(0, ease));
@@ -87,7 +85,7 @@ export default function OnboardingWelcome() {
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
         {/* Illustration */}
-        <View style={styles.illustrationWrapper}>
+        <View style={styles.illustrationCard}>
           <Animated.View style={illustrationStyle}>
             <FamilyIllustration width={280} height={200} />
           </Animated.View>
@@ -95,10 +93,12 @@ export default function OnboardingWelcome() {
 
         {/* Text lines */}
         <View style={styles.textBlock}>
+          <Animated.Text style={[styles.eyebrow, line1Style]}>SETUP</Animated.Text>
+
           <Animated.Text style={[styles.headline, styles.headlineBold, line1Style]}>
             Parenting is hard.
           </Animated.Text>
-          <Animated.Text style={[styles.headline, styles.headlineEmphasis, line2Style]}>
+          <Animated.Text style={[styles.headline, styles.headlineAccent, line2Style]}>
             You're not failing.
           </Animated.Text>
           <Animated.Text style={[styles.subtitle, line3Style]}>
@@ -109,15 +109,15 @@ export default function OnboardingWelcome() {
         {/* Bottom actions */}
         <View style={styles.bottom}>
           <TouchableOpacity
-            style={styles.ctaButton}
+            style={styles.primaryButton}
             onPress={() => router.push('/onboarding/name')}
-            activeOpacity={0.85}
+            activeOpacity={0.88}
           >
-            <Text style={styles.ctaText}>Let's Go →</Text>
+            <Text style={styles.primaryButtonText}>Let's Go</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={goToAppOrAuth} style={styles.crisisTouch}>
-            <Text style={styles.crisisText}>I need help RIGHT NOW</Text>
+          <TouchableOpacity onPress={goToAppOrAuth} style={styles.secondaryTouch}>
+            <Text style={styles.secondaryText}>I need help right now</Text>
           </TouchableOpacity>
 
           <View style={styles.dotsRow}>
@@ -132,70 +132,84 @@ export default function OnboardingWelcome() {
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.cream,
+    backgroundColor: colors.background,
   },
   container: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 32,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xxl,
   },
-  illustrationWrapper: {
+  illustrationCard: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.paper,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.xl,
+    ...shadow.soft,
   },
   textBlock: {
-    marginBottom: 32,
+    marginBottom: spacing.xxl,
     alignItems: 'center',
+  },
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
   },
   headline: {
     fontSize: 28,
     textAlign: 'center',
-    color: colors.black,
-    marginBottom: 8,
+    color: colors.text,
+    marginBottom: spacing.sm,
+    lineHeight: 34,
   },
   headlineBold: {
     fontWeight: '800',
   },
-  headlineEmphasis: {
+  headlineAccent: {
     fontWeight: '700',
-    color: colors.amber,
+    color: colors.primary,
   },
   subtitle: {
     fontSize: 16,
-    color: colors.gray,
+    color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 22,
-    marginTop: 4,
+    lineHeight: 24,
+    marginTop: spacing.sm,
+    maxWidth: 320,
   },
   bottom: {
     alignItems: 'center',
   },
-  ctaButton: {
-    backgroundColor: colors.amber,
-    borderRadius: 999,
-    paddingVertical: 16,
-    paddingHorizontal: 48,
+  primaryButton: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.full,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',
     width: '100%',
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
-  ctaText: {
-    color: colors.white,
+  primaryButtonText: {
+    color: colors.paper,
     fontSize: 18,
     fontWeight: '700',
   },
-  crisisTouch: {
-    marginBottom: 24,
+  secondaryTouch: {
+    marginBottom: spacing.xl,
   },
-  crisisText: {
+  secondaryText: {
     fontSize: 14,
-    color: colors.gray,
+    color: colors.textSecondary,
     textDecorationLine: 'underline',
   },
   dotsRow: {
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
 });

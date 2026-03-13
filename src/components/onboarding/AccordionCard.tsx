@@ -7,7 +7,7 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, radius, shadow } from '@/lib/theme';
+import { colors, spacing, radius, shadow } from '@/lib/theme';
 
 interface AccordionCardProps {
   label: string;
@@ -63,7 +63,7 @@ export function AccordionCard({
           {displayText}
         </Text>
         <Animated.View style={chevronStyle}>
-          <Ionicons name="chevron-down" size={20} color={colors.gray} />
+          <Ionicons name="chevron-down" size={20} color={colors.textSecondary} />
         </Animated.View>
       </TouchableOpacity>
 
@@ -77,11 +77,11 @@ export function AccordionCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.paper,
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.border,
-    ...shadow.card,
+    ...shadow.soft,
     overflow: 'hidden',
   },
   body: {
@@ -91,8 +91,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 6,
   },
   headerText: {
     fontSize: 16,
@@ -100,10 +100,10 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   headerTextPlaceholder: {
-    color: '#B0A9A0',
+    color: colors.grayLight,
   },
   headerTextSelected: {
-    color: colors.black,
+    color: colors.text,
     fontWeight: '500',
   },
   divider: {

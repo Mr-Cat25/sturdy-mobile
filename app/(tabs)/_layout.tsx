@@ -2,6 +2,7 @@ import React from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useRequireAuth } from '@/lib/useRequireAuth';
+import { colors } from '@/lib/theme';
 
 export default function TabLayout() {
   const { loading } = useRequireAuth();
@@ -11,15 +12,15 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#EAA05B',
-        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.grayLight,
         tabBarStyle: {
           borderTopWidth: 1,
-          borderTopColor: '#F3F4F6',
+          borderTopColor: colors.border,
           height: 85,
           paddingBottom: 25,
           paddingTop: 10,
-          backgroundColor: '#FFFFFF',
+          backgroundColor: colors.paper,
         },
         headerShown: false,
       }}

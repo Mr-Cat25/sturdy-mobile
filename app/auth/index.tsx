@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 import { getActiveChild } from '@/lib/childProfile';
+import { colors, spacing, radius, shadow } from '@/lib/theme';
 
 export default function AuthScreen() {
   const router = useRouter();
@@ -37,8 +38,6 @@ export default function AuthScreen() {
   const startCooldown = (seconds = 60) => {
     if (cooldownRef.current) clearInterval(cooldownRef.current);
     setCooldown(seconds);
-    // Capture the id in the closure so the callback always clears the correct
-    // interval, even if startCooldown is called again before it fires.
     const id = setInterval(() => {
       setCooldown((prev) => {
         if (prev <= 1) {
@@ -90,7 +89,6 @@ export default function AuthScreen() {
       console.log('[Auth] verifyOtp ← error:', error);
       if (error) throw error;
 
-      // 1) If profile/username missing -> go setup-account
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -143,81 +141,86 @@ export default function AuthScreen() {
         behavior={Platform.select({ ios: 'padding', android: undefined })}
       >
         <View style={styles.container}>
-          <View style={styles.header}>
+          <View style={styles.heroCard}>
+            <Text style={styles.eyebrow}>WELCOME</Text>
             <Text style={styles.title}>Sturdy</Text>
             <Text style={styles.subtitle}>
               {step === 'email'
-                ? 'Create your free account or sign in.'
+                ? 'Sign in for calm, practical parenting support in hard moments.'
                 : `We sent a 6-digit code to\n${sentEmail}`}
             </Text>
           </View>
 
-          {step === 'email' ? (
-            <>
-              <Text style={styles.label}>Email address</Text>
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="parent@example.com"
-                placeholderTextColor="#B0A9A0"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-              <TouchableOpacity
-                style={[styles.button, loading && styles.buttonDisabled]}
-                onPress={handleSendOTP}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Continue</Text>
-                )}
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <Text style={styles.label}>Enter your 6-digit code</Text>
-              <TextInput
-                style={[styles.input, styles.otpInput]}
-                value={otp}
-                onChangeText={setOtp}
-                placeholder="123456"
-                placeholderTextColor="#B0A9A0"
-                keyboardType="number-pad"
-                maxLength={6}
-                autoFocus
-              />
-              <TouchableOpacity
-                style={[styles.button, loading && styles.buttonDisabled]}
-                onPress={handleVerifyOTP}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Sign In</Text>
-                )}
-              </TouchableOpacity>
-              <Text style={styles.hint}>
-                {'Didn\'t get an email? Check your spam or promotions folder.\nNote: a custom SMTP configuration is required for reliable delivery.'}
-              </Text>
-              <TouchableOpacity
-                style={[styles.linkTouch, (cooldown > 0 || loading) && styles.linkDisabled]}
-                onPress={handleResendOTP}
-                disabled={cooldown > 0 || loading}
-              >
-                <Text style={[styles.linkText, cooldown > 0 && styles.linkTextMuted]}>
-                  {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
+          <View style={styles.formCard}>
+            {step === 'email' ? (
+              <>
+                <Text style={styles.label}>Email address</Text>
+                <TextInput
+                  style={styles.input}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="parent@example.com"
+                  placeholderTextColor={colors.grayLight}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                <TouchableOpacity
+                  style={[styles.buttonPrimary, loading && styles.buttonDisabled]}
+                  onPress={handleSendOTP}
+                  disabled={loading}
+                  activeOpacity={0.88}
+                >
+                  {loading ? (
+                    <ActivityIndicator color={colors.paper} />
+                  ) : (
+                    <Text style={styles.buttonPrimaryText}>Continue</Text>
+                  )}
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Text style={styles.label}>Enter your 6-digit code</Text>
+                <TextInput
+                  style={[styles.input, styles.otpInput]}
+                  value={otp}
+                  onChangeText={setOtp}
+                  placeholder="123456"
+                  placeholderTextColor={colors.grayLight}
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  autoFocus
+                />
+                <TouchableOpacity
+                  style={[styles.buttonPrimary, loading && styles.buttonDisabled]}
+                  onPress={handleVerifyOTP}
+                  disabled={loading}
+                  activeOpacity={0.88}
+                >
+                  {loading ? (
+                    <ActivityIndicator color={colors.paper} />
+                  ) : (
+                    <Text style={styles.buttonPrimaryText}>Sign In</Text>
+                  )}
+                </TouchableOpacity>
+                <Text style={styles.hint}>
+                  {'Didn\'t get an email? Check your spam or promotions folder.\nNote: a custom SMTP configuration is required for reliable delivery.'}
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.linkTouch} onPress={() => setStep('email')}>
-                <Text style={styles.linkText}>← Change email</Text>
-              </TouchableOpacity>
-            </>
-          )}
+                <TouchableOpacity
+                  style={[styles.linkTouch, (cooldown > 0 || loading) && styles.linkDisabled]}
+                  onPress={handleResendOTP}
+                  disabled={cooldown > 0 || loading}
+                >
+                  <Text style={[styles.linkText, cooldown > 0 && styles.linkTextMuted]}>
+                    {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.linkTouch} onPress={() => setStep('email')}>
+                  <Text style={styles.linkText}>← Change email</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
 
           <TouchableOpacity style={styles.backTouch} onPress={() => router.back()}>
             <Text style={styles.backText}>Go back</Text>
@@ -229,72 +232,120 @@ export default function AuthScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#FAF6F0' },
-  flex: { flex: 1 },
+  safe: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  flex: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 48,
-    paddingBottom: 24,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.xl,
   },
-  header: { marginBottom: 40 },
+  heroCard: {
+    backgroundColor: colors.paper,
+    borderRadius: radius.lg,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.xl,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.soft,
+  },
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+  },
   title: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#1C1C1E',
-    marginBottom: 8,
+    color: colors.text,
+    marginBottom: spacing.sm,
   },
   subtitle: {
     fontSize: 16,
-    color: '#6B6B6B',
+    color: colors.textSecondary,
     lineHeight: 24,
+  },
+  formCard: {
+    backgroundColor: colors.paper,
+    borderRadius: radius.lg,
+    padding: spacing.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.card,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#4A453E',
-    marginBottom: 8,
+    color: colors.text,
+    marginBottom: spacing.sm,
   },
   input: {
-    height: 52,
-    borderRadius: 14,
-    backgroundColor: '#FFF',
-    paddingHorizontal: 16,
+    height: 54,
+    borderRadius: radius.md,
+    backgroundColor: colors.background,
+    paddingHorizontal: spacing.lg,
     fontSize: 17,
-    color: '#1C1C1E',
+    color: colors.text,
     borderWidth: 1,
-    borderColor: '#E8E0D5',
-    marginBottom: 16,
+    borderColor: colors.border,
+    marginBottom: spacing.lg,
   },
   otpInput: {
     fontSize: 28,
     textAlign: 'center',
     letterSpacing: 8,
   },
-  button: {
-    backgroundColor: '#E8A040',
-    borderRadius: 999,
-    paddingVertical: 16,
+  buttonPrimary: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.full,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
-    shadowColor: '#E8A040',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
-  buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  buttonPrimaryText: {
+    color: colors.paper,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
   hint: {
     fontSize: 12,
-    color: '#8B8580',
+    color: colors.textSecondary,
     lineHeight: 18,
-    marginTop: 12,
+    marginTop: spacing.md,
     textAlign: 'center',
   },
-  linkTouch: { marginTop: 16, alignItems: 'center' },
-  linkText: { fontSize: 14, color: '#6B6B6B' },
-  linkDisabled: { opacity: 0.5 },
-  linkTextMuted: { color: '#B0A9A0' },
-  backTouch: { marginTop: 'auto', alignItems: 'center' },
-  backText: { fontSize: 14, color: '#A0A0A0' },
+  linkTouch: {
+    marginTop: spacing.lg,
+    alignItems: 'center',
+  },
+  linkText: {
+    fontSize: 14,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  linkDisabled: {
+    opacity: 0.5,
+  },
+  linkTextMuted: {
+    color: colors.grayLight,
+  },
+  backTouch: {
+    marginTop: 'auto',
+    alignItems: 'center',
+    paddingTop: spacing.xl,
+  },
+  backText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
 });

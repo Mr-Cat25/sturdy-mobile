@@ -57,7 +57,7 @@ export default function ScriptLibrary() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
-            <View style={[styles.card, shadow.card]}>
+            <View style={[styles.card, shadow.soft]}>
               <View style={styles.cardHeader}>
                 <Text style={styles.trigger}>{item.trigger}</Text>
                 <TouchableOpacity onPress={() => handleDelete(item.id)}>
@@ -87,7 +87,7 @@ export default function ScriptLibrary() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.cream },
+  safe: { flex: 1, backgroundColor: colors.background },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -96,29 +96,33 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
   },
-  title: { fontSize: 24, fontWeight: '700', color: colors.black },
+  title: { fontSize: 24, fontWeight: '700', color: colors.text },
   limitNote: { fontSize: 13, color: colors.grayLight, fontWeight: '500' },
   list: { paddingHorizontal: spacing.md, paddingBottom: spacing.xxl },
   card: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.paper,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  trigger: { fontSize: 14, fontWeight: '700', color: colors.amber },
+  trigger: { fontSize: 14, fontWeight: '700', color: colors.primary },
   deleteBtn: { fontSize: 16, color: colors.grayLight, padding: 2 },
-  situation: { fontSize: 14, color: colors.black, lineHeight: 20, marginBottom: 6 },
+  situation: { fontSize: 14, color: colors.text, lineHeight: 20, marginBottom: 6 },
   date: { fontSize: 12, color: colors.grayLight },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.lg },
   emptyIcon: { fontSize: 48, marginBottom: spacing.md },
-  emptyTitle: { fontSize: 18, fontWeight: '700', color: colors.black, marginBottom: 8 },
-  emptySub: { fontSize: 14, color: colors.gray, textAlign: 'center', lineHeight: 20 },
+  emptyTitle: { fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: 8 },
+  emptySub: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', lineHeight: 20 },
   limitBanner: {
     margin: spacing.md,
-    backgroundColor: '#FFF3CD',
+    backgroundColor: colors.amberLight,
     borderRadius: radius.md,
     padding: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  limitBannerText: { fontSize: 13, color: '#856404', textAlign: 'center' },
+  limitBannerText: { fontSize: 13, color: colors.clay, textAlign: 'center' },
 });

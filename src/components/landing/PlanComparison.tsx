@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { colors, spacing, radius, shadow } from '@/lib/theme';
 
 type FeatureItem = {
   text: string;
@@ -81,19 +82,19 @@ const styles = StyleSheet.create({
   wrap: {
     marginTop: 8,
     marginBottom: 8,
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.md,
   },
   kicker: {
     fontSize: 12,
     letterSpacing: 1.2,
-    color: '#8B8580',
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: 8,
   },
   h2: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#1C1C1E',
+    color: colors.text,
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -105,22 +106,18 @@ const styles = StyleSheet.create({
   column: {
     flex: 1,
     borderRadius: 18,
-    padding: 16,
-    shadowColor: '#1C1C1E',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 2,
+    padding: spacing.md,
+    ...shadow.soft,
   },
   freeColumn: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.paper,
     borderWidth: 1,
-    borderColor: '#E8E0D5',
+    borderColor: colors.border,
   },
   premiumColumn: {
-    backgroundColor: '#FFFBF4',
+    backgroundColor: colors.background,
     borderWidth: 2,
-    borderColor: '#E8A040',
+    borderColor: colors.primary,
     position: 'relative',
     paddingTop: 36,
   },
@@ -129,14 +126,14 @@ const styles = StyleSheet.create({
     top: -1,
     left: 0,
     right: 0,
-    backgroundColor: '#E8A040',
+    backgroundColor: colors.primary,
     borderTopLeftRadius: 17,
     borderTopRightRadius: 17,
     paddingVertical: 5,
     alignItems: 'center',
   },
   recommendedText: {
-    color: '#fff',
+    color: colors.paper,
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 1.0,
@@ -144,12 +141,12 @@ const styles = StyleSheet.create({
   planName: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#1C1C1E',
+    color: colors.text,
     marginBottom: 14,
     textAlign: 'center',
   },
   premiumPlanName: {
-    color: '#B87020',
+    color: colors.primary,
   },
   featureRow: {
     flexDirection: 'row',
@@ -169,46 +166,46 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     lineHeight: 17,
-    color: '#1C1C1E',
+    color: colors.text,
   },
   featureTextDimmed: {
-    color: '#A0A0A0',
+    color: colors.grayLight,
   },
   freeBtn: {
     marginTop: 16,
-    borderRadius: 999,
+    borderRadius: radius.full,
     borderWidth: 1.5,
-    borderColor: '#1C1C1E',
+    borderColor: colors.text,
     paddingVertical: 10,
     alignItems: 'center',
   },
   freeBtnText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#1C1C1E',
+    color: colors.text,
   },
   premiumBtn: {
     marginTop: 16,
-    borderRadius: 999,
-    backgroundColor: '#E8A040',
+    borderRadius: radius.full,
+    backgroundColor: colors.primary,
     paddingVertical: 10,
     alignItems: 'center',
-    shadowColor: '#E8A040',
+    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 4,
   },
   premiumBtnText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#fff',
+    color: colors.paper,
   },
   footnote: {
     marginTop: 14,
     textAlign: 'center',
     fontSize: 11,
-    color: '#A0A0A0',
+    color: colors.grayLight,
     lineHeight: 16,
   },
 });

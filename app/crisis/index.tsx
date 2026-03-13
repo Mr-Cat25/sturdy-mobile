@@ -3,12 +3,14 @@ import {
   View, Text, TextInput, TouchableOpacity,
   ScrollView, ActivityIndicator, StyleSheet, Alert
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { generateScript } from '../../src/lib/api/generateScript';
 import type { ScriptResult } from '../../src/lib/api/generateScript';
 import { useActiveChild } from '../../src/lib/useActiveChild';
 import { useRequireAuth } from '../../src/lib/useRequireAuth';
 import { saveScript } from '../../src/lib/childProfile';
 import { TriggerGrid } from '../../src/components/crisis/TriggerGrid';
+import { colors, spacing, radius, shadow } from '../../src/lib/theme';
 
 export default function CrisisScreen() {
   const child = useActiveChild();
@@ -84,118 +86,138 @@ export default function CrisisScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.headerRow}>
-        <Text style={styles.header}>
-          {step === 1 ? '🆘 Support' : step === 2 ? 'Details' : 'Your Script'}
-        </Text>
-        {step > 1 && (
-          <TouchableOpacity onPress={resetFlow}>
-            <Text style={styles.resetText}>Start Over</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <Text style={styles.sub}>
-        Supporting {child?.nickname || child?.name || 'your child'}
-      </Text>
-
-      {step === 1 && <TriggerGrid onSelect={handleTriggerSelect} />}
-
-      {step === 2 && (
-        <View style={styles.stepContainer}>
-          <Text style={styles.promptText}>
-            You selected: <Text style={{ fontWeight: 'bold' }}>{selectedTrigger}</Text>
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.headerRow}>
+          <Text style={styles.header}>
+            {step === 1 ? 'Support' : step === 2 ? 'Details' : 'Your Script'}
           </Text>
-          <Text style={styles.promptSub}>What exactly is happening right now?</Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. He's refusing to put on shoes..."
-            multiline
-            numberOfLines={4}
-            value={situation}
-            onChangeText={setSituation}
-            autoFocus
-          />
-
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleGenerate}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Generate Script</Text>
-            )}
-          </TouchableOpacity>
+          {step > 1 && (
+            <TouchableOpacity onPress={resetFlow}>
+              <Text style={styles.resetText}>Start Over</Text>
+            </TouchableOpacity>
+          )}
         </View>
-      )}
 
-      {step === 3 && result && (
-        <View style={styles.resultContainer}>
-          <Section emoji="🧘" label="Regulate (You first)" text={result.regulate} color="#FEF3C7" />
-          <Section emoji="🤝" label="Connect" text={result.connect} color="#DBEAFE" />
-          <Section emoji="🧭" label="Guide" text={result.guide} color="#D1FAE5" />
-          <Section emoji="🛡️" label="What If (They push back)" text={result.what_if} color="#FCE7F3" />
+        <Text style={styles.sub}>
+          Supporting {child?.nickname || child?.name || 'your child'}
+        </Text>
 
-          <TouchableOpacity
-            style={[styles.saveButton, saved && styles.saveButtonSaved]}
-            onPress={handleSave}
-            disabled={saved}
-          >
-            <Text style={styles.saveButtonText}>{saved ? '✓ Saved to Library' : '📖 Save to Library'}</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </ScrollView>
+        {step === 1 && <TriggerGrid onSelect={handleTriggerSelect} />}
+
+        {step === 2 && (
+          <View style={styles.stepContainer}>
+            <Text style={styles.promptText}>
+              You selected: <Text style={styles.promptBold}>{selectedTrigger}</Text>
+            </Text>
+            <Text style={styles.promptSub}>What exactly is happening right now?</Text>
+
+            <TextInput
+              style={styles.input}
+              placeholder="e.g. He's refusing to put on shoes..."
+              placeholderTextColor={colors.grayLight}
+              multiline
+              numberOfLines={4}
+              value={situation}
+              onChangeText={setSituation}
+              autoFocus
+            />
+
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleGenerate}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color={colors.paper} />
+              ) : (
+                <Text style={styles.buttonText}>Generate Script</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {step === 3 && result && (
+          <View style={styles.resultContainer}>
+            <Section emoji="🧘" label="Regulate (You first)" text={result.regulate} tint="#F0EDE8" accent={colors.clay} />
+            <Section emoji="🤝" label="Connect" text={result.connect} tint="#EAF0F4" accent={colors.primary} />
+            <Section emoji="🧭" label="Guide" text={result.guide} tint="#EBF2EE" accent={colors.sage} />
+            <Section emoji="🛡️" label="What If (They push back)" text={result.what_if} tint="#F4EDEB" accent={colors.danger} />
+
+            <TouchableOpacity
+              style={[styles.saveButton, saved && styles.saveButtonSaved]}
+              onPress={handleSave}
+              disabled={saved}
+            >
+              <Text style={styles.saveButtonText}>{saved ? '✓ Saved to Library' : '📖 Save to Library'}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
-function Section({ emoji, label, text, color }: {
-  emoji: string; label: string; text: string; color: string;
+function Section({ emoji, label, text, tint, accent }: {
+  emoji: string; label: string; text: string; tint: string; accent: string;
 }) {
   return (
-    <View style={[styles.section, { backgroundColor: color }]}>
-      <Text style={styles.sectionLabel}>{emoji} {label}</Text>
+    <View style={[styles.section, { backgroundColor: tint, borderLeftColor: accent }]}>
+      <Text style={[styles.sectionLabel, { color: accent }]}>{emoji} {label}</Text>
       <Text style={styles.sectionText}>{text}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: '#FAF8F5', flexGrow: 1, paddingTop: 60 },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  header: { fontSize: 24, fontWeight: '700', color: '#1A1A1A' },
-  resetText: { color: '#EAA05B', fontSize: 16, fontWeight: '600' },
-  sub: { fontSize: 16, color: '#888', marginBottom: 20 },
-  stepContainer: { marginTop: 10 },
-  promptText: { fontSize: 18, color: '#333', marginBottom: 8 },
-  promptSub: { fontSize: 14, color: '#666', marginBottom: 16 },
+  safe: { flex: 1, backgroundColor: colors.background },
+  container: { padding: spacing.md, paddingTop: spacing.lg, paddingBottom: spacing.xxl, flexGrow: 1 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xs },
+  header: { fontSize: 24, fontWeight: '700', color: colors.text },
+  resetText: { color: colors.primary, fontSize: 15, fontWeight: '600' },
+  sub: { fontSize: 15, color: colors.textSecondary, marginBottom: spacing.md },
+  stepContainer: { marginTop: spacing.sm },
+  promptText: { fontSize: 17, color: colors.text, marginBottom: spacing.sm },
+  promptBold: { fontWeight: '700' },
+  promptSub: { fontSize: 14, color: colors.textSecondary, marginBottom: spacing.md },
   input: {
-    borderWidth: 1, borderColor: '#EAEAEA', borderRadius: 12,
-    padding: 16, fontSize: 16, minHeight: 120, textAlignVertical: 'top',
-    marginBottom: 20, backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    fontSize: 16,
+    minHeight: 120,
+    textAlignVertical: 'top',
+    marginBottom: spacing.lg,
+    backgroundColor: colors.paper,
+    color: colors.text,
   },
   button: {
-    backgroundColor: '#EAA05B', borderRadius: 30,
-    padding: 18, alignItems: 'center', marginBottom: 24,
+    backgroundColor: colors.primary,
+    borderRadius: radius.full,
+    padding: spacing.lg,
+    alignItems: 'center',
+    marginBottom: spacing.lg,
   },
   buttonDisabled: { opacity: 0.6 },
-  buttonText: { color: '#FFF', fontSize: 18, fontWeight: '600' },
-  resultContainer: { gap: 12, marginTop: 10 },
-  section: { borderRadius: 16, padding: 16, marginBottom: 8 },
-  sectionLabel: { fontSize: 14, fontWeight: '700', color: '#333', marginBottom: 8 },
-  sectionText: { fontSize: 16, color: '#1A1A1A', lineHeight: 24 },
-  saveButton: {
-    backgroundColor: '#E8A040',
-    borderRadius: 30,
-    padding: 16,
-    alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 24,
+  buttonText: { color: colors.paper, fontSize: 17, fontWeight: '700' },
+  resultContainer: { gap: spacing.sm, marginTop: spacing.sm },
+  section: {
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.xs,
+    borderLeftWidth: 3,
   },
-  saveButtonSaved: { backgroundColor: '#4CAF50' },
-  saveButtonText: { color: '#FFF', fontSize: 16, fontWeight: '600' },
+  sectionLabel: { fontSize: 13, fontWeight: '700', marginBottom: spacing.sm, letterSpacing: 0.3 },
+  sectionText: { fontSize: 16, color: colors.text, lineHeight: 24 },
+  saveButton: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.full,
+    padding: spacing.md,
+    alignItems: 'center',
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  saveButtonSaved: { backgroundColor: colors.sage },
+  saveButtonText: { color: colors.paper, fontSize: 15, fontWeight: '700' },
 });

@@ -51,9 +51,9 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#D9D9D9',
+    backgroundColor: colors.border,
   },
   dotActive: {
-    backgroundColor: colors.amber,
+    backgroundColor: colors.primary,
   },
 });
