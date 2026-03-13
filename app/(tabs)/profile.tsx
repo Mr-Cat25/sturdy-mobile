@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { colors } from '@/lib/theme';
+import { colors, spacing, radius, shadow } from '@/lib/theme';
 import { supabase } from '@/lib/supabase';
 
 export default function ProfileScreen() {
@@ -34,22 +34,23 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.cream },
-  content: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
-  title: { fontSize: 24, fontWeight: '700', color: colors.black },
-  subtitle: { fontSize: 14, color: colors.gray, marginTop: 8, textAlign: 'center' },
+  safe: { flex: 1, backgroundColor: colors.background },
+  content: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xl },
+  title: { fontSize: 24, fontWeight: '700', color: colors.text },
+  subtitle: { fontSize: 14, color: colors.textSecondary, marginTop: spacing.sm, textAlign: 'center' },
 
   signOutBtn: {
-    marginTop: 24,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 999,
+    marginTop: spacing.lg,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm + 4,
+    borderRadius: radius.full,
     borderWidth: 1,
-    borderColor: '#E8E0D5',
-    backgroundColor: '#FFF',
+    borderColor: colors.border,
+    backgroundColor: colors.paper,
+    ...shadow.soft,
   },
   signOutText: {
-    color: colors.black,
+    color: colors.text,
     fontSize: 14,
     fontWeight: '700',
   },

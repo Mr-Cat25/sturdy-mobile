@@ -1,30 +1,30 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { colors, spacing, radius, shadow } from '@/lib/theme';
 
 interface TriggerGridProps {
   onSelect: (trigger: string) => void;
 }
 
 export function TriggerGrid({ onSelect }: TriggerGridProps) {
-  // Using the exact categories from your gorgeous mockup
   const triggers = [
-    { id: 'Big feelings', icon: '🖼️', color: '#FDF2E9' }, // Light orange tint
-    { id: 'Aggression', icon: '👧', color: '#FEF9E7' },   // Light yellow tint
-    { id: 'Sleep', icon: '🛌', color: '#EBF5FB' },        // Light blue tint
-    { id: 'School', icon: '🎒', color: '#FDEDEC' },       // Light pink/red tint
+    { id: 'Big feelings', icon: '🖼️', color: '#F5EFE8' },
+    { id: 'Aggression', icon: '👧', color: '#EDF4EF' },
+    { id: 'Sleep', icon: '🛌', color: '#EBF1F6' },
+    { id: 'School', icon: '🎒', color: '#F6EDE9' },
   ];
 
   return (
     <View style={styles.container}>
       <Text style={styles.question}>What feels hardest right now?</Text>
-      
+
       <View style={styles.grid}>
         {triggers.map((item) => (
-          <TouchableOpacity 
-            key={item.id} 
-            style={[styles.card, { backgroundColor: item.color }]}
+          <TouchableOpacity
+            key={item.id}
+            style={[styles.card, { backgroundColor: item.color }, shadow.soft]}
             onPress={() => onSelect(item.id)}
-            activeOpacity={0.7}
+            activeOpacity={0.75}
           >
             <Text style={styles.icon}>{item.icon}</Text>
             <Text style={styles.label}>{item.id}</Text>
@@ -38,42 +38,40 @@ export function TriggerGrid({ onSelect }: TriggerGridProps) {
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    paddingVertical: 20,
+    paddingVertical: spacing.lg,
   },
   question: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#1A1A1A',
-    marginBottom: 24,
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: spacing.lg,
     textAlign: 'center',
+    lineHeight: 30,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: 16, // Requires React Native 0.71+
+    gap: spacing.md,
   },
   card: {
-    width: '47%', // Allows two items per row with space in between
-    aspectRatio: 1, // Makes them perfect squares
-    borderRadius: 16,
-    padding: 16,
+    width: '47%',
+    aspectRatio: 1,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
   },
   icon: {
-    fontSize: 40,
-    marginBottom: 12,
+    fontSize: 38,
+    marginBottom: spacing.sm,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.text,
     textAlign: 'center',
   },
 });

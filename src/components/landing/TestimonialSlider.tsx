@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { colors, spacing, radius, shadow } from '@/lib/theme';
 
 const TESTIMONIALS = [
   {
@@ -145,14 +146,14 @@ const styles = StyleSheet.create({
   kicker: {
     fontSize: 12,
     letterSpacing: 1.2,
-    color: '#8B8580',
+    color: colors.textSecondary,
     textAlign: 'center',
     marginBottom: 8,
   },
   h2: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#1C1C1E',
+    color: colors.text,
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -161,27 +162,23 @@ const styles = StyleSheet.create({
     minHeight: 150,
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.paper,
     borderRadius: 18,
-    padding: 24,
+    padding: spacing.xl,
     borderWidth: 1,
-    borderColor: '#E8E0D5',
-    shadowColor: '#1C1C1E',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    elevation: 3,
+    borderColor: colors.border,
+    ...shadow.soft,
   },
   stars: {
     fontSize: 18,
-    color: '#E8A040',
+    color: colors.amber,
     letterSpacing: 3,
     marginBottom: 12,
   },
   quote: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#1C1C1E',
+    color: colors.text,
     fontStyle: 'italic',
     marginBottom: 16,
   },
@@ -192,11 +189,11 @@ const styles = StyleSheet.create({
   authorName: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1C1C1E',
+    color: colors.text,
   },
   authorDetail: {
     fontSize: 14,
-    color: '#6B6B6B',
+    color: colors.textSecondary,
   },
   dotsRow: {
     flexDirection: 'row',
@@ -209,12 +206,12 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#E8E0D5',
+    backgroundColor: colors.border,
   },
   dotActive: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#E8A040',
+    backgroundColor: colors.primary,
   },
 });
